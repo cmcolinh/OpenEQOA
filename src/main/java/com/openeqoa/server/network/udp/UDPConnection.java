@@ -2,6 +2,7 @@ package com.openeqoa.server.network.udp;
 
 import com.openeqoa.server.ServerMain;
 import com.openeqoa.server.network.ServerConstants;
+import com.openeqoa.server.network.udp.in.packet.ClientPacket;
 import com.openeqoa.server.network.udp.in.packet.message.*;
 import com.openeqoa.server.util.NetworkUtils;
 
@@ -10,9 +11,14 @@ import lombok.AllArgsConstructor;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static com.openeqoa.server.util.Log.println;
 
@@ -57,7 +63,7 @@ public class UDPConnection {
 
                 try {
                     serverSocket.receive(packet);
-                    processPacket(packet, buffer);
+                    processPacket(packet);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -66,25 +72,21 @@ public class UDPConnection {
     }
 
     /**
-     * Here we process the packet and break it down before it reaches the even bus.
+     * Here we process the packet and build a ClientPacket object
      *
      * @param packet The incoming packet from the byte buffer.
      * @param buffer Packet data including extra buffer width.
      */
-    private void processPacket(DatagramPacket packet) {
+    private ClientPacket processPacket(DatagramPacket packet) {
         
         byte[] packetBytes = packet.getData();
         
-        int[] messageStartIndices = findMessages(packetBytes);
+        List<ClientMessage> messages = findMessages(packetBytes);
         
-        // Process packet header
-
         // User the CRC calculator to get the correct CRC
         // TODO: byte[] crc = CRC.calculateCRC();
 
-        // TODO: Send data to the packet event bus for processing...
-//        eventBus.publish(opcode, ServerMain.getInstance().getClientManager().getClient(packet.getAddress().getHostAddress()));
-
+        return new ClientPacket.Implementation(packetBytes, messages);
 
         // Only print out the actual length of the packet and not the buffer...
         //println(getClass(), "Full Length Packet:");
@@ -95,13 +97,19 @@ public class UDPConnection {
         //println(PRINT_DEBUG);
     }
 
-    private List<> findMessages(byte[] packetBytes) {
+    private List<ClientMessage> findMessages(byte[] packetBytes) {
     	//TODO lots of lazy hard coding here.  I'm sure that not all packets are following these rules.
     	final int HEADER_BREAK_INDEX = 16;
     	
         int index = HEADER_BREAK_INDEX;
-    	
-
+        
+        return messageStreamFrom(packetBytes, index)
+        	.collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+    }
+    
+    private Stream<ClientMessage> messageStreamFrom(byte[] packetBytes, int startIndex) {
+    	Iterable<ClientMessage> messageIterable = () -> new PacketByteMessageIterator(packetBytes, startIndex);
+    	return StreamSupport.stream(messageIterable.spliterator(), false);
     }
 
     @AllArgsConstructor
@@ -109,7 +117,13 @@ public class UDPConnection {
     	public static final int MESSAGE_SEPARATOR = 0xFB;
     	
     	public static final Map<Short, MakeClientMessage> createMessageFromOpcode = Map.ofEntries(
-    			Map.entry((short)0x0009, SendReportMessage::new));
+    			Map.entry((short)0x0009, SendReportMessage::new),
+    			Map.entry((short)0x000A, PrepareItemOnHotbarRequestMessage::new),
+    			Map.entry((short)0x002A, CharacterSelectMessage::new),
+    			Map.entry((short)0x002B, CharacterCreateMessage::new),
+    			Map.entry((short)0x002C, CharacterViewMessage::new),
+    			Map.entry((short)0x002D, CharacterDeleteMessage::new),
+    			Map.entry((short)0x00C8, RollRequestMessage::new));
     	
     	private final byte[] packetBytes;
     	
@@ -123,29 +137,26 @@ public class UDPConnection {
 		@Override
 		public ClientMessage next() {
 			int length = getLength();
+			ClientMessage message = createMessageFromOpcode.get(opcode()).with(packetBytes, index + 3, length);
+			index = index + length + 3;
+			return message;
 		}
 		
 		private int getLength() {
 			return packetBytes[index];
 		}
 		
+		private short opcode() {
+			short opcode = packetBytes[index + 2];
+			opcode = (short) ((opcode << 8) | packetBytes[index + 1]);
+
+			return opcode;
+		}
+		
 		@FunctionalInterface
 		private static interface MakeClientMessage
 		{
-			public ClientMessage from(byte[] packetBytes, int startIndex, int messageLength);
+			public ClientMessage with(byte[] packetBytes, int startIndex, int messageLength);
 		}
-    }
-    
-    Iterator<ClientMessage> messageStream(byte[] packetBytes, int startIndex){
-    	final int MESSAGE_SEPARATOR = 0xFB;
-    	return new Iterator<ClientMessage>() {
-    		int index = startIndex;
-
-
-    	}
-    }
-    
-    private void printByteArray(String message, byte[] array) {
-        for (byte b : array) println(getClass(), message + ": " + NetworkUtils.byteToHex(b));
     }
 }
