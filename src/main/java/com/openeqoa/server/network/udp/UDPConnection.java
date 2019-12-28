@@ -2,11 +2,16 @@ package com.openeqoa.server.network.udp;
 
 import com.openeqoa.server.ServerMain;
 import com.openeqoa.server.network.ServerConstants;
+import com.openeqoa.server.network.udp.in.packet.message.*;
 import com.openeqoa.server.util.NetworkUtils;
+
+import lombok.AllArgsConstructor;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static com.openeqoa.server.util.Log.println;
@@ -66,32 +71,13 @@ public class UDPConnection {
      * @param packet The incoming packet from the byte buffer.
      * @param buffer Packet data including extra buffer width.
      */
-    @SuppressWarnings("ConstantConditions")
-    private void processPacket(DatagramPacket packet, byte[] buffer) {
-        int lmt = buffer.length;
-
-        byte[] sourceId = new byte[0];
-        byte[] destinationId = new byte[0];
-        byte[] bc = new byte[0];
-        byte[] bpl = new byte[0];
-        byte[] sessionId = new byte[0];
-        byte[] bundleType = new byte[0];
-        byte[] bundleNumber = new byte[0];
-        byte[] messageType = new byte[0];
-        byte[] messageLength = new byte[0];
-        byte[] opcode = new byte[0];
-
+    private void processPacket(DatagramPacket packet) {
+        
+        byte[] packetBytes = packet.getData();
+        
+        int[] messageStartIndices = findMessages(packetBytes);
+        
         // Process packet header
-        if (lmt > 1) sourceId = NetworkUtils.subArray(buffer, 0, 1);
-        if (lmt > 3) destinationId = NetworkUtils.subArray(buffer, 2, 3);
-        if (lmt > 4) bc = NetworkUtils.subArray(buffer, 4, 4);
-        if (lmt > 5) bpl = NetworkUtils.subArray(buffer, 5, 5);
-        if (lmt > 9) sessionId = NetworkUtils.subArray(buffer, 6, 9);
-        if (lmt > 10) bundleType = NetworkUtils.subArray(buffer, 10, 10);
-        if (lmt > 12) bundleNumber = NetworkUtils.subArray(buffer, 11, 12);
-        if (lmt > 14) messageType = NetworkUtils.subArray(buffer, 13, 14);
-        if (lmt > 16) messageLength = NetworkUtils.subArray(buffer, 15, 16);
-        if (lmt > 18) opcode = NetworkUtils.subArray(buffer, 17, 18);
 
         // User the CRC calculator to get the correct CRC
         // TODO: byte[] crc = CRC.calculateCRC();
@@ -99,31 +85,66 @@ public class UDPConnection {
         // TODO: Send data to the packet event bus for processing...
 //        eventBus.publish(opcode, ServerMain.getInstance().getClientManager().getClient(packet.getAddress().getHostAddress()));
 
-        if (!PRINT_DEBUG) return;
-        println(getClass(), "------------------------------------------------------");
-        println(getClass(), "Packet IP: " + packet.getAddress().toString());
-        println(getClass(), "UDP Defined Packet Length: " + packet.getLength());
-
-        printByteArray("SourceID", sourceId);
-        printByteArray("DestinationID", destinationId);
-        printByteArray("bc", bc);
-        printByteArray("bpl", bpl);
-        printByteArray("SessionId", sessionId);
-        printByteArray("BundleType", bundleType);
-        printByteArray("BundleNumber", bundleNumber);
-        printByteArray("MessageType", messageType);
-        printByteArray("MessageLength", messageLength);
-        printByteArray("OpCode", opcode);
 
         // Only print out the actual length of the packet and not the buffer...
-        println(getClass(), "Full Length Packet:");
-        for (int i = 0; i < packet.getLength(); i++) {
-            System.out.print(NetworkUtils.byteToHex(buffer[i]) + " ");
-            buffer[i] = 0;
-        }
-        println(PRINT_DEBUG);
+        //println(getClass(), "Full Length Packet:");
+        //for (int i = 0; i < packet.getLength(); i++) {
+        //    System.out.print(NetworkUtils.byteToHex(buffer[i]) + " ");
+        //    buffer[i] = 0;
+        //}
+        //println(PRINT_DEBUG);
     }
 
+    private List<> findMessages(byte[] packetBytes) {
+    	//TODO lots of lazy hard coding here.  I'm sure that not all packets are following these rules.
+    	final int HEADER_BREAK_INDEX = 16;
+    	
+        int index = HEADER_BREAK_INDEX;
+    	
+
+    }
+
+    @AllArgsConstructor
+    public static class PacketByteMessageIterator implements Iterator<ClientMessage>{
+    	public static final int MESSAGE_SEPARATOR = 0xFB;
+    	
+    	public static final Map<Short, MakeClientMessage> createMessageFromOpcode = Map.ofEntries(
+    			Map.entry((short)0x0009, SendReportMessage::new));
+    	
+    	private final byte[] packetBytes;
+    	
+    	private int index;
+    	
+		@Override
+		public boolean hasNext() {
+			return packetBytes.length > (index + 5) && packetBytes[index] == MESSAGE_SEPARATOR;
+		}
+
+		@Override
+		public ClientMessage next() {
+			int length = getLength();
+		}
+		
+		private int getLength() {
+			return packetBytes[index];
+		}
+		
+		@FunctionalInterface
+		private static interface MakeClientMessage
+		{
+			public ClientMessage from(byte[] packetBytes, int startIndex, int messageLength);
+		}
+    }
+    
+    Iterator<ClientMessage> messageStream(byte[] packetBytes, int startIndex){
+    	final int MESSAGE_SEPARATOR = 0xFB;
+    	return new Iterator<ClientMessage>() {
+    		int index = startIndex;
+
+
+    	}
+    }
+    
     private void printByteArray(String message, byte[] array) {
         for (byte b : array) println(getClass(), message + ": " + NetworkUtils.byteToHex(b));
     }
