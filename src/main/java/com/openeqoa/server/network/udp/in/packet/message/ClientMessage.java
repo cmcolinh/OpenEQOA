@@ -1,6 +1,6 @@
 package com.openeqoa.server.network.udp.in.packet.message;
 
-import com.openeqoa.server.network.udp.MessageHandler;
+import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
 
 /**
  * This interface represent UDP messages from the client.

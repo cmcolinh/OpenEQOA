@@ -1,6 +1,6 @@
 package com.openeqoa.server.network.udp.in.packet.message;
 
-import com.openeqoa.server.network.udp.MessageHandler;
+import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
 
 /**
  * Model for client packets with opcode 0x002A
