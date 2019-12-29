@@ -15,4 +15,8 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compileOnly 'org.projectlombok:lombok:1.18.10'
     annotationProcessor 'org.projectlombok:lombok:1.18.10'
+    implementation 'org.slf4j:slf4j-api:1.7.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.4.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
