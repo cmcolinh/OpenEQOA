@@ -1,20 +1,21 @@
 package com.openeqoa.server.network.udp.out;
 
+import java.io.ObjectOutputStream;
+
 import com.openeqoa.server.network.client.ClientHandler;
 import com.openeqoa.server.network.udp.PacketOut;
 
-import java.io.ObjectOutputStream;
+import lombok.extern.slf4j.Slf4j;
 
-import static com.openeqoa.server.util.Log.println;
-
+@Slf4j
 public class PingOut extends PacketOut {
 
-    public PingOut(ClientHandler clientHandler) {
-        //super(Opcodes.PING, clientHandler);
-    }
+	public PingOut(ClientHandler clientHandler) {
+		super(clientHandler);
+	}
 
-    @Override
-    protected void createPacket(ObjectOutputStream write) {
-        println(getClass(), "Ping!");
-    }
+	@Override
+	protected void createPacket(ObjectOutputStream write) {
+		log.debug("{}{}", getClass(), "Ping!");
+	}
 }

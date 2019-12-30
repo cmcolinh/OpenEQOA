@@ -59,7 +59,6 @@ public class ProcessUDPPacket implements Runnable {
 		final int HEADER_BREAK_INDEX = 16;
 
 		int index = HEADER_BREAK_INDEX;
-
 		return messageStreamFrom(packetBytes, index).filter(message -> message != null)
 				.collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
 	}
