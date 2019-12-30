@@ -79,7 +79,7 @@ public class ProcessUDPPacket implements Runnable {
 	 */
 	@AllArgsConstructor
 	private static class PacketByteMessageIterator implements Iterator<ClientMessage> {
-		public static final int MESSAGE_SEPARATOR = 0xFB;
+		public static final byte MESSAGE_SEPARATOR = (byte) 0xFB;
 
 		public static final Map<Short, MakeClientMessage> createMessageFromOpcode = Map.ofEntries(
 				Map.entry((short) 0x0009, SendReportMessage::new),
@@ -103,18 +103,18 @@ public class ProcessUDPPacket implements Runnable {
 		public ClientMessage next() {
 			int length = getLength();
 			ClientMessage message = createMessageFromOpcode.getOrDefault(opcode(), (p, s, l) -> null).with(packetBytes,
-					index + 3, length);
-			index = index + length + 3;
+					index + 4, length);
+			index = index + length + 4;
 			return message;
 		}
 
 		private int getLength() {
-			return packetBytes[index];
+			return packetBytes[index + 1];
 		}
 
 		private short opcode() {
-			short opcode = packetBytes[index + 2];
-			opcode = (short) ((opcode << 8) | packetBytes[index + 1]);
+			short opcode = packetBytes[index + 5];
+			opcode = (short) ((opcode << 8) | packetBytes[index + 4]);
 
 			return opcode;
 		}

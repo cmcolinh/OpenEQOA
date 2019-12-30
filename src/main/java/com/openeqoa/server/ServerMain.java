@@ -4,15 +4,13 @@ import com.openeqoa.server.game.GameLoop;
 import com.openeqoa.server.network.client.ClientManager;
 import com.openeqoa.server.network.tcp.TCPConnection;
 import com.openeqoa.server.network.udp.UDPConnection;
-import com.openeqoa.server.network.udp.in.PingIn;
 import lombok.Getter;
 import lombok.Setter;
 
 import static com.openeqoa.server.util.Log.println;
 
 @Getter
-public
-class ServerMain {
+public class ServerMain {
 
     private static ServerMain instance = null;
 
@@ -49,10 +47,7 @@ class ServerMain {
     private void startServer() {
         println(getClass(), "Initializing network...");
         tcpConnection.openServer();
-        udpConnection.openServer((eventBus) -> {
-            // Register UDP packet listeners here.
-            eventBus.registerListener(new PingIn());
-        });
+        udpConnection.openServer();
         gameLoop.start();
     }
 }

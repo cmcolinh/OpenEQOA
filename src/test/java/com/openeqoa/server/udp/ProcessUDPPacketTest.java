@@ -10,7 +10,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.openeqoa.server.network.udp.ProcessUDPPacket;
+import com.openeqoa.server.network.udp.in.packet.message.CharacterCreateMessage;
+import com.openeqoa.server.network.udp.in.packet.message.CharacterDeleteMessage;
 import com.openeqoa.server.network.udp.in.packet.message.ClientMessage;
+import com.openeqoa.server.network.udp.in.packet.message.handler.CharacterCreationRoutineMessageHandler;
+import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
 
 class ProcessUDPPacketTest {
 	private ProcessUDPPacket processUDPPacket;
@@ -58,6 +62,27 @@ class ProcessUDPPacketTest {
 		assertEquals(2, messages.size());
 	}
 
+	@Test
+	@DisplayName("first message is a CharacterDeleteMessage")
+	void firstMessageIsACharacterDeleteMessage() throws Exception {
+		List<ClientMessage> messages = findMessages(processUDPPacket);
+		assertEquals(CharacterDeleteMessage.class, messages.get(0).getClass());
+	}
+
+	@Test
+	@DisplayName("second message is a CharacterCreateMessage")
+	void secondMessageIsACharacterDeleteMessage() throws Exception {
+		List<ClientMessage> messages = findMessages(processUDPPacket);
+		assertEquals(CharacterCreateMessage.class, messages.get(1).getClass());
+	}
+
+	@Test
+	@DisplayName("messages will be handles by a CharacterCreateMessage")
+	void handlerIsACharacterCreationRoutineMessageHandler() throws Exception {
+		MessageHandler handler = getHandler(processUDPPacket);
+		assertEquals(CharacterCreationRoutineMessageHandler.class, handler.getClass());
+	}
+
 	@SuppressWarnings("unchecked")
 	private List<ClientMessage> findMessages(ProcessUDPPacket processUDPPacket) throws Exception {
 		Field field = processUDPPacket.getClass().getDeclaredField("packetBytes");
@@ -68,5 +93,16 @@ class ProcessUDPPacketTest {
 		Method m = processUDPPacket.getClass().getDeclaredMethod("findMessages", byte[].class);
 		m.setAccessible(true);
 		return (List<ClientMessage>) m.invoke(processUDPPacket, packetBytes);
+	}
+
+	private MessageHandler getHandler(ProcessUDPPacket processUDPPacket) throws Exception {
+		Field field = processUDPPacket.getClass().getDeclaredField("packetBytes");
+		field.setAccessible(true);
+
+		byte[] packetBytes = (byte[]) field.get(processUDPPacket);
+
+		Method m = processUDPPacket.getClass().getDeclaredMethod("getHandler", byte[].class);
+		m.setAccessible(true);
+		return (MessageHandler) m.invoke(processUDPPacket, packetBytes);
 	}
 }
