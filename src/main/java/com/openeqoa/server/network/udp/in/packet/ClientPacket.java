@@ -1,5 +1,6 @@
 package com.openeqoa.server.network.udp.in.packet;
 
+import java.net.InetAddress;
 import java.util.List;
 
 import com.openeqoa.server.network.udp.in.packet.message.ClientMessage;
@@ -8,26 +9,38 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 public interface ClientPacket {
+	/** Get the IP Address from which the request came */
+	public InetAddress getIpAddress();
+
 	/** Get the Client end point for the message. It is a 2 byte (short) value */
 	public short getClientId();
 
 	/** Get the server end point for the message. It is a 2 byte (short) value */
 	public short getServerId();
 
+	/** Get the packet routine (first nibble only of the sixth byte) */
+	public byte getPacketRoutine();
+
+	/**
+	 * Get the packet length (second nibble of the sixth byte plus the full fifth
+	 * byte)
+	 */
+	public int getPacketLength();
+
 	/** Get the message session ID related to this packet */
 	public int getSessionId();
 
-	/** Get the routine that this packet covers */
-	public byte getPacketRoutine();
-
 	/** Get the packet number */
-	public short getPacketNumber();
+	public int getPacketNumber();
 
 	/** Get the messages contained in this packet */
 	public List<ClientMessage> getMessages();
 
 	@AllArgsConstructor
 	public static class Implementation implements ClientPacket {
+		@Getter
+		private final InetAddress ipAddress;
+
 		private final byte[] packetBytes;
 
 		@Getter
@@ -61,12 +74,19 @@ public interface ClientPacket {
 
 		@Override
 		public byte getPacketRoutine() {
-			return packetBytes[5];
+			return (byte) (packetBytes[5] >> 4 & 0x0F);
 		}
 
-		public short getPacketNumber() {
-			short packetNumber = packetBytes[15];
-			packetNumber = (short) ((packetNumber << 8) | packetBytes[14]);
+		@Override
+		public int getPacketLength() {
+			int packetLength = packetBytes[5] & 0x0000000F;
+			packetLength = ((packetLength << 8) | (packetBytes[4] & 0x000000FF));
+			return packetLength;
+		}
+
+		public int getPacketNumber() {
+			int packetNumber = (packetBytes[15] & 0x000000FF);
+			packetNumber = ((packetNumber << 8) | packetBytes[14]);
 
 			return packetNumber;
 		}

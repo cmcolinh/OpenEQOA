@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -77,10 +78,11 @@ class ProcessUDPPacketTest {
 	}
 
 	@Test
-	@DisplayName("messages will be handles by a CharacterCreateMessage")
+	@DisplayName("messages will be handled by a CharacterCreateMessage")
 	void handlerIsACharacterCreationRoutineMessageHandler() throws Exception {
 		MessageHandler handler = getHandler(processUDPPacket);
-		assertEquals(CharacterCreationRoutineMessageHandler.class, handler.getClass());
+		assertEquals(CharacterCreationRoutineMessageHandler.class,
+				Optional.ofNullable(handler).map(Object::getClass).orElse(null));
 	}
 
 	@SuppressWarnings("unchecked")

@@ -3,14 +3,14 @@ package com.openeqoa.server.network.client;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ClientManager {
+public class TCPClientManager {
 
     /**
-     * Map: IpAddress -> ClientHandler
+     * Map: IpAddress -> TCPClientHandler
      */
-    private final Map<String, ClientHandler> clientMap = new HashMap<>();
+    private final Map<String, TCPClientHandler> clientMap = new HashMap<>();
 
-    public void addClient(String ipAddress, ClientHandler clientHandler) {
+    public void addClient(String ipAddress, TCPClientHandler clientHandler) {
         clientMap.put(ipAddress, clientHandler);
     }
 
@@ -18,7 +18,7 @@ public class ClientManager {
         clientMap.remove(ipAddress);
     }
 
-    public ClientHandler getClient(String ipAddress) {
+    public TCPClientHandler getClient(String ipAddress) {
         return clientMap.get(ipAddress);
     }
 

@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-public class ClientHandler {
+public class TCPClientHandler {
 
 	// TCP
 	private Socket tcpSocket;

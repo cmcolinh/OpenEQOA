@@ -2,7 +2,7 @@ package com.openeqoa.server.network.udp;
 
 import java.io.ObjectOutputStream;
 
-import com.openeqoa.server.network.client.ClientHandler;
+import com.openeqoa.server.network.client.TCPClientHandler;
 
 import lombok.AllArgsConstructor;
 
@@ -12,7 +12,7 @@ public abstract class PacketOut {
 	/**
 	 * The client handler that holds the object output stream
 	 */
-	private final ClientHandler clientHandler;
+	private final TCPClientHandler clientHandler;
 
 	/**
 	 * Sends the packet to the client.

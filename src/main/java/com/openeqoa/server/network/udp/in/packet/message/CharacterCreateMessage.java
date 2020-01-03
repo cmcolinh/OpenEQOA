@@ -1,17 +1,20 @@
 package com.openeqoa.server.network.udp.in.packet.message;
 
+import java.net.InetAddress;
+
 import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
 
 /**
  * Model for client packets with opcode 0x002B
+ * 
  * @author colin
  *
  */
 public final class CharacterCreateMessage extends AbstractPacketWrappingClientMessage {
 	private int nameLength = 0;
 
-	public CharacterCreateMessage(byte[] wrappedPacketBytes, int startIndex, int length) {
-		super(wrappedPacketBytes, startIndex, length);
+	public CharacterCreateMessage(InetAddress ipAddress, byte[] wrappedPacketBytes, int startIndex, int length) {
+		super(ipAddress, wrappedPacketBytes, startIndex, length);
 	}
 
 	@Override
@@ -21,10 +24,9 @@ public final class CharacterCreateMessage extends AbstractPacketWrappingClientMe
 
 	/** @return the length of the selected name */
 	public int getNameLength() {
-		return nameLength > 0 ? nameLength : wrappedPacketBytes[startIndex + 5] << 24
-				+ wrappedPacketBytes[startIndex + 4] << 16
-				+ wrappedPacketBytes[startIndex + 3] << 8
-				+ wrappedPacketBytes[startIndex + 2];
+		return nameLength > 0 ? nameLength
+				: wrappedPacketBytes[startIndex + 5] << 24 + wrappedPacketBytes[startIndex + 4] << 16
+						+ wrappedPacketBytes[startIndex + 3] << 8 + wrappedPacketBytes[startIndex + 2];
 	}
 
 	/** @return the selected player name */
@@ -38,8 +40,8 @@ public final class CharacterCreateMessage extends AbstractPacketWrappingClientMe
 
 	/** @return the player's level (should be 1, right?) */
 	public byte getPlayerLevel() {
-		//packets store level as double it's actual value, so will divide by 2
-		return (byte)(wrappedPacketBytes[startIndex + getNameLength() + 6] / 2);
+		// packets store level as double it's actual value, so will divide by 2
+		return (byte) (wrappedPacketBytes[startIndex + getNameLength() + 6] / 2);
 	}
 
 	/** @return the selected race */
