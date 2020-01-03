@@ -8,6 +8,7 @@ import com.openeqoa.server.network.client.UDPClientHandler;
 import com.openeqoa.server.network.client.UDPClientManager;
 import com.openeqoa.server.network.udp.CalculateCRC;
 import com.openeqoa.server.network.udp.UDPConnection;
+import com.openeqoa.server.network.udp.in.packet.ClientPacket;
 import com.openeqoa.server.network.udp.in.packet.message.GameVersionMessage;
 import com.openeqoa.server.network.udp.in.packet.message.UserInformationMessage;
 import com.openeqoa.server.network.udp.in.packet.message.acknowledgement.GameVersionPacketAcknowledgementMessage;
@@ -26,6 +27,18 @@ public class SessionInitiatorRoutineMessageHandler implements MessageHandler {
     public final UDPClientManager udpClientManager;
     public final CalculateCRC calculateCRC;
     public final short serverId;
+
+    @Override
+    public void handle(ClientPacket packet) {
+        int sessionId = packet.getSessionId();
+        int messageNum = packet.getLastBundle();
+        // Send the acknowledgement if there is one to the client handler
+        Optional.ofNullable(packet)
+                .map(p -> udpClientManager.getClient(p.getClientId()))
+                .ifPresent(clientHandler -> clientHandler.acknowledgePacket(sessionId, messageNum));
+        // Now handle any messages contained in this packet
+        MessageHandler.super.handle(packet);
+    }
 
     @Override
     public void visit(GameVersionMessage message) {

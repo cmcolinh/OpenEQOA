@@ -9,86 +9,91 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 public interface ClientPacket {
-	/** Get the IP Address from which the request came */
-	public InetAddress getIpAddress();
+    /** Get the IP Address from which the request came */
+    public InetAddress getIpAddress();
 
-	/** Get the Client end point for the message. It is a 2 byte (short) value */
-	public short getClientId();
+    /** Get the Client end point for the message. It is a 2 byte (short) value */
+    public short getClientId();
 
-	/** Get the server end point for the message. It is a 2 byte (short) value */
-	public short getServerId();
+    /** Get the server end point for the message. It is a 2 byte (short) value */
+    public short getServerId();
 
-	/** Get the packet routine (first nibble only of the sixth byte) */
-	public byte getPacketRoutine();
+    /** Get the packet routine (first nibble only of the sixth byte) */
+    public byte getPacketRoutine();
 
-	/**
-	 * Get the packet length (second nibble of the sixth byte plus the full fifth
-	 * byte)
-	 */
-	public int getPacketLength();
+    /**
+     * Get the packet length (second nibble of the sixth byte plus the full fifth
+     * byte)
+     */
+    public int getPacketLength();
 
-	/** Get the message session ID related to this packet */
-	public int getSessionId();
+    /** Get the message session ID related to this packet */
+    public int getSessionId();
 
-	/** Get the packet number */
-	public int getPacketNumber();
+    /** Get the packet number */
+    public int getPacketNumber();
 
-	/** Get the messages contained in this packet */
-	public List<ClientMessage> getMessages();
+    /** Get the server packet bundle to which this is a response */
+    default int getLastBundle() {
+        return 1;
+    }
 
-	@AllArgsConstructor
-	public static class Implementation implements ClientPacket {
-		@Getter
-		private final InetAddress ipAddress;
+    /** Get the messages contained in this packet */
+    public List<ClientMessage> getMessages();
 
-		private final byte[] packetBytes;
+    @AllArgsConstructor
+    public static class Implementation implements ClientPacket {
+        @Getter
+        private final InetAddress ipAddress;
 
-		@Getter
-		private final List<ClientMessage> messages;
+        private final byte[] packetBytes;
 
-		@Override
-		public short getClientId() {
-			short clientId = packetBytes[1];
-			clientId = (short) ((clientId << 8) | packetBytes[0]);
+        @Getter
+        private final List<ClientMessage> messages;
 
-			return clientId;
-		}
+        @Override
+        public short getClientId() {
+            short clientId = packetBytes[1];
+            clientId = (short) ((clientId << 8) | packetBytes[0]);
 
-		@Override
-		public short getServerId() {
-			short serverId = packetBytes[3];
-			serverId = (short) ((serverId << 8) | packetBytes[2]);
+            return clientId;
+        }
 
-			return serverId;
-		}
+        @Override
+        public short getServerId() {
+            short serverId = packetBytes[3];
+            serverId = (short) ((serverId << 8) | packetBytes[2]);
 
-		@Override
-		public int getSessionId() {
-			int sessionId = packetBytes[9];
-			sessionId = (sessionId << 8) | packetBytes[8];
-			sessionId = (sessionId << 8) | packetBytes[7];
-			sessionId = (sessionId << 8) | packetBytes[6];
+            return serverId;
+        }
 
-			return sessionId;
-		}
+        @Override
+        public int getSessionId() {
+            int sessionId = packetBytes[9];
+            sessionId = (sessionId << 8) | packetBytes[8];
+            sessionId = (sessionId << 8) | packetBytes[7];
+            sessionId = (sessionId << 8) | packetBytes[6];
 
-		@Override
-		public byte getPacketRoutine() {
-			return (byte) (packetBytes[5] >> 4 & 0x0F);
-		}
+            return sessionId;
+        }
 
-		@Override
-		public int getPacketLength() {
-			int packetLength = packetBytes[5] & 0x0000000F;
-			packetLength = ((packetLength << 8) | (packetBytes[4] & 0x000000FF));
-			return packetLength;
-		}
+        @Override
+        public byte getPacketRoutine() {
+            return (byte) (packetBytes[5] >> 4 & 0x0F);
+        }
 
-		public int getPacketNumber() {
-			int packetNumber = (packetBytes[15] & 0x000000FF);
-			packetNumber = ((packetNumber << 8) | packetBytes[14]);
+        @Override
+        public int getPacketLength() {
+            int packetLength = packetBytes[5] & 0x0000000F;
+            packetLength = ((packetLength << 8) | (packetBytes[4] & 0x000000FF));
+            return packetLength;
+        }
 
-			return packetNumber;
-		}
-	}
+        public int getPacketNumber() {
+            int packetNumber = (packetBytes[15] & 0x000000FF);
+            packetNumber = ((packetNumber << 8) | packetBytes[14]);
+
+            return packetNumber;
+        }
+    }
 }
