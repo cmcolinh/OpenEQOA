@@ -16,42 +16,42 @@ import lombok.AllArgsConstructor;
  */
 @AllArgsConstructor
 public abstract class AbstractPacketWrappingClientMessage implements ClientMessage {
-	protected final InetAddress ipAddress;
+    protected final InetAddress ipAddress;
 
-	/** The bytes representing the packet that contained this message */
-	protected final byte[] wrappedPacketBytes;
+    /** The bytes representing the packet that contained this message */
+    protected final byte[] wrappedPacketBytes;
 
-	/** The start index of this message in the packet */
-	protected final int startIndex;
+    /** The start index of this message in the packet */
+    protected final int startIndex;
 
-	/** The length of the message */
-	protected final int length;
+    /** The length of the message */
+    protected final int length;
 
-	@Override
-	public short getClientId() {
-		short clientId = wrappedPacketBytes[1];
-		clientId = (short) ((clientId << 8) | wrappedPacketBytes[0]);
+    @Override
+    public short getClientId() {
+        short clientId = wrappedPacketBytes[1];
+        clientId = (short) ((clientId << 8) | wrappedPacketBytes[0]);
 
-		return clientId;
-	}
+        return clientId;
+    }
 
-	@Override
-	public short getServerId() {
-		short serverId = wrappedPacketBytes[3];
-		serverId = (short) ((serverId << 8) | wrappedPacketBytes[2]);
+    @Override
+    public short getServerId() {
+        short serverId = wrappedPacketBytes[3];
+        serverId = (short) ((serverId << 8) | wrappedPacketBytes[2]);
 
-		return serverId;
-	}
+        return serverId;
+    }
 
-	public int getSessionId() {
-		int sessionId = wrappedPacketBytes[10];
-		sessionId = (sessionId << 8) | wrappedPacketBytes[9];
-		sessionId = (sessionId << 8) | wrappedPacketBytes[8];
-		sessionId = (sessionId << 8) | wrappedPacketBytes[7];
+    public int getSessionId() {
+        int sessionId = wrappedPacketBytes[10];
+        sessionId = (sessionId << 8) | wrappedPacketBytes[9];
+        sessionId = (sessionId << 8) | wrappedPacketBytes[8];
+        sessionId = (sessionId << 8) | wrappedPacketBytes[7];
 
-		return sessionId;
-	}
+        return sessionId;
+    }
 
-	@Override
-	public abstract void accept(MessageHandler handler);
+    @Override
+    public abstract void accept(MessageHandler handler);
 }
