@@ -35,7 +35,7 @@ public class SessionInitiatorRoutineMessageHandler implements MessageHandler {
         // Send the acknowledgement if there is one to the client handler
         Optional.ofNullable(packet)
                 .map(p -> udpClientManager.getClient(p.getClientId()))
-                .ifPresent(clientHandler -> clientHandler.acknowledgePacket(sessionId, messageNum));
+                .ifPresent(clientHandler -> clientHandler.acknowledgePacket(sessionId, messageNum, this));
         // Now handle any messages contained in this packet
         MessageHandler.super.handle(packet);
     }

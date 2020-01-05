@@ -1,5 +1,7 @@
 package com.openeqoa.server.network.udp;
 
+import static com.openeqoa.server.util.Log.println;
+
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.Iterator;
@@ -17,9 +19,11 @@ import com.openeqoa.server.network.udp.in.packet.message.CharacterDeleteMessage;
 import com.openeqoa.server.network.udp.in.packet.message.CharacterSelectMessage;
 import com.openeqoa.server.network.udp.in.packet.message.CharacterViewMessage;
 import com.openeqoa.server.network.udp.in.packet.message.ClientMessage;
+import com.openeqoa.server.network.udp.in.packet.message.GameVersionMessage;
 import com.openeqoa.server.network.udp.in.packet.message.PrepareItemOnHotbarRequestMessage;
 import com.openeqoa.server.network.udp.in.packet.message.RollRequestMessage;
 import com.openeqoa.server.network.udp.in.packet.message.SendReportMessage;
+import com.openeqoa.server.network.udp.in.packet.message.UserInformationMessage;
 import com.openeqoa.server.network.udp.in.packet.message.handler.CharacterCreationRoutineMessageHandler;
 import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
 import com.openeqoa.server.network.udp.in.packet.message.handler.SessionInitiatorRoutineMessageHandler;
@@ -36,102 +40,109 @@ import lombok.AllArgsConstructor;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProcessUDPPacket implements Runnable {
-	public static Map<Byte, MessageHandler> createMessageFromRoutingCode = Map
-			.ofEntries(Map.entry((byte) 0x07, new CharacterCreationRoutineMessageHandler()),
-					Map.entry((byte) 0x0E, new SessionInitiatorRoutineMessageHandler(
-							ServerMain.getInstance().getUdpConnection(), ServerMain.getInstance().getUdpClients(),
-							ServerMain.getInstance().getCalculateCRC(), ServerMain.getInstance().getServerId())));
+    public static Map<Byte, MessageHandler> createMessageFromRoutingCode = Map
+            .ofEntries(Map.entry((byte) 0x07, new CharacterCreationRoutineMessageHandler()),
+                    Map.entry((byte) 0x0E, new SessionInitiatorRoutineMessageHandler(
+                            ServerMain.getInstance().getUdpConnection(), ServerMain.getInstance().getUdpClients(),
+                            ServerMain.getInstance().getCalculateCRC(), ServerMain.getInstance().getServerId())));
 
-	private final byte[] packetBytes;
+    private final byte[] packetBytes;
 
-	private final InetAddress ipAddress;
+    private final InetAddress ipAddress;
 
-	public static ProcessUDPPacket withBytes(byte[] packetBytes, InetAddress ipAddress) {
-		return new ProcessUDPPacket(packetBytes, ipAddress);
-	}
+    public static ProcessUDPPacket withBytes(byte[] packetBytes, InetAddress ipAddress) {
+        return new ProcessUDPPacket(packetBytes, ipAddress);
+    }
 
-	public void run() {
-		List<ClientMessage> messages = findMessages(packetBytes, ipAddress);
-		MessageHandler handler = getHandler(packetBytes);
-		ClientPacket packet = new ClientPacket.Implementation(ipAddress, packetBytes, messages);
-		Optional.ofNullable(handler).ifPresent(h -> h.handle(packet));
-	}
+    public void run() {
+        println(getClass(), "Searching for messages...");
+        List<ClientMessage> messages = findMessages(packetBytes, ipAddress);
+        println(getClass(), "" + messages.size() + " Messages found");
+        MessageHandler handler = getHandler(packetBytes);
+        ClientPacket packet = new ClientPacket.Implementation(ipAddress, packetBytes, messages);
+        Optional.ofNullable(handler).ifPresent(h -> h.handle(packet));
+    }
 
-	private MessageHandler getHandler(byte[] packetBytes) {
-		return packetBytes.length > 5 ? createMessageFromRoutingCode.get((byte) (packetBytes[5] >> 4 & 0x0F)) : null;
-	}
+    private MessageHandler getHandler(byte[] packetBytes) {
+        return packetBytes.length > 5 ? createMessageFromRoutingCode.get((byte) (packetBytes[5] >> 4 & 0x0F)) : null;
+    }
 
-	private List<ClientMessage> findMessages(byte[] packetBytes, InetAddress ipAddress) {
-		// TODO lots of lazy hard coding here. I'm sure that not all packets are
-		// following these rules.
-		final int HEADER_BREAK_INDEX = 16;
+    private List<ClientMessage> findMessages(byte[] packetBytes, InetAddress ipAddress) {
+        // TODO lots of lazy hard coding here. I'm sure that not all packets are
+        // following these rules.
+        final int HEADER_BREAK_INDEX = 14;
 
-		int index = HEADER_BREAK_INDEX;
-		return messageStreamFrom(packetBytes, ipAddress, index).filter(message -> message != null)
-				.collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
-	}
+        println(getClass(), "0x" + Integer.toHexString(packetBytes[14]).substring(6, 8));
 
-	private Stream<ClientMessage> messageStreamFrom(byte[] packetBytes, InetAddress ipAddress, int startIndex) {
-		Iterable<ClientMessage> messageIterable = () -> new PacketByteMessageIterator(packetBytes, ipAddress,
-				startIndex);
-		return StreamSupport.stream(messageIterable.spliterator(), false);
-	}
+        int index = HEADER_BREAK_INDEX;
+        return messageStreamFrom(packetBytes, ipAddress, index).filter(message -> message != null)
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+    }
 
-	/**
-	 * This class will iterate through the bytes of the packet, reading for message
-	 * length markers, opcodes, and separator tokens, to parse individual messages
-	 * from the serialized bytes
-	 * 
-	 * @author colin
-	 *
-	 */
-	@AllArgsConstructor
-	private static class PacketByteMessageIterator implements Iterator<ClientMessage> {
-		public static final byte MESSAGE_SEPARATOR = (byte) 0xFB;
+    private Stream<ClientMessage> messageStreamFrom(byte[] packetBytes, InetAddress ipAddress, int startIndex) {
+        Iterable<ClientMessage> messageIterable = () -> new PacketByteMessageIterator(packetBytes, ipAddress,
+                startIndex);
+        return StreamSupport.stream(messageIterable.spliterator(), false);
+    }
 
-		public static final Map<Short, MakeClientMessage> createMessageFromOpcode = Map.ofEntries(
-				Map.entry((short) 0x0009, SendReportMessage::new),
-				Map.entry((short) 0x000A, PrepareItemOnHotbarRequestMessage::new),
-				Map.entry((short) 0x002A, CharacterSelectMessage::new),
-				Map.entry((short) 0x002B, CharacterCreateMessage::new),
-				Map.entry((short) 0x002C, CharacterViewMessage::new),
-				Map.entry((short) 0x002D, CharacterDeleteMessage::new),
-				Map.entry((short) 0x00C8, RollRequestMessage::new));
+    /**
+     * This class will iterate through the bytes of the packet, reading for message
+     * length markers, opcodes, and separator tokens, to parse individual messages
+     * from the serialized bytes
+     * 
+     * @author colin
+     *
+     */
+    @AllArgsConstructor
+    private static class PacketByteMessageIterator implements Iterator<ClientMessage> {
+        public static final byte MESSAGE_SEPARATOR = (byte) 0xFB;
 
-		private final byte[] packetBytes;
+        public static final Map<Short, MakeClientMessage> createMessageFromOpcode = Map.ofEntries(
+                Map.entry((short) 0x0000, GameVersionMessage::new), Map.entry((short) 0x0009, SendReportMessage::new),
+                Map.entry((short) 0x000A, PrepareItemOnHotbarRequestMessage::new),
+                Map.entry((short) 0x002A, CharacterSelectMessage::new),
+                Map.entry((short) 0x002B, CharacterCreateMessage::new),
+                Map.entry((short) 0x002C, CharacterViewMessage::new),
+                Map.entry((short) 0x002D, CharacterDeleteMessage::new),
+                Map.entry((short) 0x00C8, RollRequestMessage::new),
+                Map.entry((short) 0x0904, UserInformationMessage::new));
 
-		private final InetAddress ipAddress;
+        private final byte[] packetBytes;
 
-		private int index;
+        private final InetAddress ipAddress;
 
-		@Override
-		public boolean hasNext() {
-			return packetBytes.length > (index + 5) && packetBytes[index] == MESSAGE_SEPARATOR;
-		}
+        private int index;
 
-		@Override
-		public ClientMessage next() {
-			int length = getLength();
-			ClientMessage message = createMessageFromOpcode.getOrDefault(opcode(), (i, p, s, l) -> null).with(ipAddress,
-					packetBytes, index + 4, length);
-			index = index + length + 4;
-			return message;
-		}
+        @Override
+        public boolean hasNext() {
+            return packetBytes.length > (index + 5) && packetBytes[index] == MESSAGE_SEPARATOR;
+        }
 
-		private int getLength() {
-			return packetBytes[index + 1];
-		}
+        @Override
+        public ClientMessage next() {
+            int length = getLength();
+            println(getClass(), "" + Integer.toHexString(opcode()));
+            ClientMessage message = createMessageFromOpcode.getOrDefault(opcode(), (i, p, s, l) -> null)
+                    .with(ipAddress, packetBytes, index + 4, length);
+            println(getClass(), "" + message);
+            index = index + length + 4;
+            return message;
+        }
 
-		private short opcode() {
-			short opcode = packetBytes[index + 5];
-			opcode = (short) ((opcode << 8) | packetBytes[index + 4]);
+        private int getLength() {
+            return packetBytes[index + 1];
+        }
 
-			return opcode;
-		}
+        private short opcode() {
+            short opcode = packetBytes[index + 5];
+            opcode = (short) ((opcode << 8) | packetBytes[index + 4]);
 
-		@FunctionalInterface
-		private static interface MakeClientMessage {
-			public ClientMessage with(InetAddress ipAddress, byte[] packetBytes, int startIndex, int messageLength);
-		}
-	}
+            return opcode;
+        }
+
+        @FunctionalInterface
+        private static interface MakeClientMessage {
+            public ClientMessage with(InetAddress ipAddress, byte[] packetBytes, int startIndex, int messageLength);
+        }
+    }
 }

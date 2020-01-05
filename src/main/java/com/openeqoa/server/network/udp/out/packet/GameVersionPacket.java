@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 public class GameVersionPacket implements ServerPacket {
     private byte[] bytes;
-    private MessageHandler messageHandler;
 
     public byte[] getPacketBytes() {
         return bytes.clone();
@@ -42,7 +41,7 @@ public class GameVersionPacket implements ServerPacket {
         return sessionId;
     }
 
-    public void whenAcknowledged() {
+    public void whenAcknowledged(MessageHandler messageHandler) {
         short serverId = getServerId();
         short clientId = getClientId();
         int sessionId = getSessionId();
@@ -56,8 +55,6 @@ public class GameVersionPacket implements ServerPacket {
         private final CalculateCRC calculateCRC;
 
         protected byte[] packetBytes = new byte[35];
-
-        private MessageHandler callbackMessageHandler;
 
         /** serverId (2 byte value) */
         public GameVersionPacket.Builder serverId(short serverId) {
@@ -130,7 +127,7 @@ public class GameVersionPacket implements ServerPacket {
             packetBytes[32] = crcBytes[1];
             packetBytes[33] = crcBytes[2];
             packetBytes[34] = crcBytes[3];
-            return new GameVersionPacket(packetBytes, callbackMessageHandler);
+            return new GameVersionPacket(packetBytes);
         }
     }
 }

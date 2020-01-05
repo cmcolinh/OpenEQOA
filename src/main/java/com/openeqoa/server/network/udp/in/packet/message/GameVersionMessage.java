@@ -11,22 +11,22 @@ import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
  *
  */
 public final class GameVersionMessage extends AbstractPacketWrappingClientMessage {
-	public GameVersionMessage(InetAddress ipAddress, byte[] wrappedPacketBytes, int startIndex, int length) {
-		super(ipAddress, wrappedPacketBytes, startIndex, length);
-	}
+    public GameVersionMessage(InetAddress ipAddress, byte[] wrappedPacketBytes, int startIndex, int length) {
+        super(ipAddress, wrappedPacketBytes, startIndex, length);
+    }
 
-	/** get the version of EQOA the client is running */
-	public int getGameVersion() {
-		int gameVersion = wrappedPacketBytes[startIndex + 5];
-		gameVersion = (gameVersion << 8) | wrappedPacketBytes[startIndex + 4];
-		gameVersion = (gameVersion << 8) | wrappedPacketBytes[3];
-		gameVersion = (gameVersion << 8) | wrappedPacketBytes[2];
+    /** get the version of EQOA the client is running */
+    public int getGameVersion() {
+        int gameVersion = wrappedPacketBytes[startIndex + 5];
+        gameVersion = (gameVersion << 8) | wrappedPacketBytes[startIndex + 4];
+        gameVersion = (gameVersion << 8) | wrappedPacketBytes[startIndex + 3];
+        gameVersion = (gameVersion << 8) | wrappedPacketBytes[startIndex + 2];
 
-		return gameVersion;
-	}
+        return gameVersion;
+    }
 
-	@Override
-	public void accept(MessageHandler handler) {
-		handler.visit(this);
-	}
+    @Override
+    public void accept(MessageHandler handler) {
+        handler.visit(this);
+    }
 }

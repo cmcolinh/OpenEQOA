@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.openeqoa.server.network.udp.UDPConnection;
+import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
 import com.openeqoa.server.network.udp.out.packet.ServerPacket;
 
 import lombok.Getter;
@@ -27,7 +28,7 @@ public interface UDPClientHandler {
     /**
      * notify the handler that a packet was acknowledged by the client
      */
-    void acknowledgePacket(int sessionId, int messageNum);
+    void acknowledgePacket(int sessionId, int messageNum, MessageHandler messageHandler);
 
     public static class Implementation implements UDPClientHandler {
         // TODO: resend packets automatically if no acknowledgement is received within X
@@ -59,10 +60,10 @@ public interface UDPClientHandler {
         }
 
         @Override
-        public void acknowledgePacket(int sessionId, int messageNum) {
+        public void acknowledgePacket(int sessionId, int messageNum, MessageHandler messageHandler) {
             Optional.ofNullable(unacknowledgedPackets.get(sessionId))
                     .map(sessionMap -> sessionMap.remove(sessionId))
-                    .ifPresent(serverPacket -> serverPacket.whenAcknowledged());
+                    .ifPresent(serverPacket -> serverPacket.whenAcknowledged(messageHandler));
         }
     }
 }
