@@ -68,6 +68,8 @@ public class UDPConnection {
         // get a 0 indexed view of the bytes received (and free the buffer to be reused
         // by other packets)
         byte[] packetBytes = getPacketContentsFromBuffer(packet.getData(), packet.getOffset(), packet.getLength());
+        println(getClass(), "Packet received: " + packetBytes.length + " bytes");
+        println(getClass(), packetBytesAsHexString(packetBytes));
 
         new Thread(ProcessUDPPacket.withBytes(packetBytes, packet.getAddress())).run();
     }
@@ -83,12 +85,8 @@ public class UDPConnection {
     public void sendUDPPacket(ServerPacket packet, UDPClientHandler client) {
         byte[] packetBytes = packet.getPacketBytes();
         println(getClass(), "Sending packet: " + packet.getPacketBytes().length + " bytes");
-        println(getClass(),
-                intStream(packet.getPacketBytes())
-                        .mapToObj(b -> Integer.toHexString(b))
-                        .map(s -> String.format("%8s", "a").replace(" ", "0"))
-                        .map(s -> s.substring(6, 8))
-                        .collect(Collectors.joining(" ")));
+        println(getClass(), packetBytesAsHexString(packet.getPacketBytes()));
+
         DatagramPacket outPacket = new DatagramPacket(packetBytes, packetBytes.length, client.getIpAddress(),
                 client.getPort());
         try {
@@ -97,8 +95,13 @@ public class UDPConnection {
             System.out.println("that was bad"); // TODO: something useful
         }
     }
-    
-    private IntStream intStream(byte[] array) {
-        return IntStream.range(0, array.length).map(idx -> array[idx]);
+
+    private String packetBytesAsHexString(byte[] array) {
+        return IntStream.range(0, array.length)
+                .map(idx -> array[idx])
+                .mapToObj(b -> Integer.toHexString(b))
+                .map(s -> String.format("%8s", s).replace(" ", "0"))
+                .map(s -> s.substring(6, 8))
+                .collect(Collectors.joining(" "));
     }
 }

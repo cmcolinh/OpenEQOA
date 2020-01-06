@@ -1,5 +1,7 @@
 package com.openeqoa.server.network.udp.out.packet;
 
+import static com.openeqoa.server.util.Log.println;
+
 import java.util.Arrays;
 
 import com.openeqoa.server.network.udp.CalculateCRC;
@@ -72,6 +74,7 @@ public class GameVersionPacket implements ServerPacket {
 
         /** the sessionid (written in the packet header, and then the bundle header) */
         public GameVersionPacket.Builder sessionId(int sessionId) {
+            println(getClass(), "" + sessionId);
             packetBytes[6] = (byte) (sessionId & 0xFF);
             packetBytes[7] = (byte) ((sessionId >> 8) & 0xFF);
             packetBytes[8] = (byte) ((sessionId >> 16) & 0xFF);

@@ -1,5 +1,7 @@
 package com.openeqoa.server.network.udp.in.packet.message;
 
+import static com.openeqoa.server.util.Log.println;
+
 import java.net.InetAddress;
 
 import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
@@ -44,11 +46,10 @@ public abstract class AbstractPacketWrappingClientMessage implements ClientMessa
     }
 
     public int getSessionId() {
-        int sessionId = wrappedPacketBytes[10];
-        sessionId = (sessionId << 8) | wrappedPacketBytes[9];
-        sessionId = (sessionId << 8) | wrappedPacketBytes[8];
-        sessionId = (sessionId << 8) | wrappedPacketBytes[7];
-
+        int sessionId = ((wrappedPacketBytes[10] & 0xff) << 24) | ((wrappedPacketBytes[9] & 0xff) << 16)
+                | ((wrappedPacketBytes[8] & 0xff) << 8) | (wrappedPacketBytes[7] & 0xff);
+        println(getClass(), Integer.toHexString(sessionId));
+        println(getClass(), "hello");
         return sessionId;
     }
 
