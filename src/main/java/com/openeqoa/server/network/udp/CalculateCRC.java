@@ -37,15 +37,15 @@ public interface CalculateCRC extends Function<byte[], byte[]> {
             int crcValue = 0xffffffff;
 
             for (byte b : value) {
-                crcValue = (crcValue >> 8) ^ crcTable[(crcValue & 0xff) ^ (b & 0xff)];
+                crcValue = (crcValue >>> 8) ^ crcTable[(crcValue & 0xff) ^ (((int)b) & 0xFF)];
             }
 
             crcValue ^= 0x11f19ed3; // Toggle operation
             byte[] result = new byte[4];
 
-            result[0] = (byte) (crcValue >> 24);
-            result[1] = (byte) (crcValue >> 16);
-            result[2] = (byte) (crcValue >> 8);
+            result[0] = (byte) (crcValue >>> 24);
+            result[1] = (byte) (crcValue >>> 16);
+            result[2] = (byte) (crcValue >>> 8);
             result[3] = (byte) (crcValue);
             NetworkUtils.reverseByteArray(result);
             return result;

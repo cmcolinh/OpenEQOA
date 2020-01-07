@@ -22,7 +22,6 @@ public class CalculateCRCTest {
     public void testPacket() {
     	byte[] packetToTest = packetOne();
     	byte[] crc = calculateCRC.apply(packetToTest);
-    	System.out.println(packetBytesAsHexString(crc));
     	assertEquals("7c 69 b6 9e", packetBytesAsHexString(crc));
     }
 
