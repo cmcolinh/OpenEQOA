@@ -33,11 +33,11 @@ public interface CalculateCRC extends Function<byte[], byte[]> {
          *         stream write.
          */
         public byte[] apply(byte[] value) {
-            println(getClass(), "value length:" + value.length);
+            println(CalculateCRC.class, "value length:" + value.length);
             int crcValue = 0xffffffff;
 
             for (byte b : value) {
-                crcValue = (crcValue >> 8) ^ crcTable[(crcValue & 0xff) ^ b];
+                crcValue = (crcValue >> 8) ^ crcTable[(crcValue & 0xff) ^ (b & 0xff)];
             }
 
             crcValue ^= 0x11f19ed3; // Toggle operation

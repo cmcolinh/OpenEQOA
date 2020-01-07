@@ -21,7 +21,8 @@ public class ServerMain {
 
     private static ServerMain instance = null;
 
-    private final short serverId = (short) 0xE00A; // "EQOA", if we need an architecture with different endpoints, this
+    private final short loginServerId = (short) 0x1061; // "login"
+    private final short serverId = (short) 0x0AE0; // "EQOA", if we need an architecture with different endpoints, this
                                                    // will need to be loadable from configuration
     private final Map<String, Short> otherServers = new HashMap<>(); // one server setup at present
     private final GameState gameState = new GameState();
@@ -30,7 +31,7 @@ public class ServerMain {
     private final TCPConnection tcpConnection = new TCPConnection();
     private final UDPConnection udpConnection = new UDPConnection();
     private final GameLoop gameLoop = new GameLoop();
-    private final CalculateCRC calculateCRC = b -> new byte[4]; // new CalculateCRC();
+    private final CalculateCRC calculateCRC = b -> new byte[4]; // CalculateCRC.getInstance();
 
     /**
      * Used to handle closing down all threads associated with the server. Volatile
