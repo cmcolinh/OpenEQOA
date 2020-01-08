@@ -1,6 +1,7 @@
 package com.openeqoa.server.network.udp.in.packet.message;
 
 import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
+import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
 
 /**
  * This interface represent UDP messages from the client. A single client packet
@@ -10,19 +11,20 @@ import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
  *
  */
 public interface ClientMessage {
-	/** Get the Client end point for the message. It is a 2 byte (short) value */
-	public short getClientId();
+    /** Get the Client end point for the message. It is a 2 byte (short) value */
+    public short getClientId();
 
-	/** Get the server end point for the message. It is a 2 byte (short) value */
-	public short getServerId();
+    /** Get the server end point for the message. It is a 2 byte (short) value */
+    public short getServerId();
 
-	/** Get the session id for the message. It is a 4 byte (int) value */
-	public int getSessionId();
+    /** Get the session id for the message. It is a 4 byte (int) value */
+    public int getSessionId();
 
-	/**
-	 * Do whatever the message handler does with this kind of ClientMessage
-	 * 
-	 * @param MessageHandler handles this message
-	 */
-	public void accept(MessageHandler handler);
+    /**
+     * Do whatever the message handler does with this kind of ClientMessage
+     * 
+     * @param MessageHandler handles this message
+     * @param ProcessPacket tracks the processing of a packet
+     */
+    public void accept(MessageHandler handler, ProcessPacket messageState);
 }

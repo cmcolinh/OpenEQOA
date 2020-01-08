@@ -31,7 +31,7 @@ public class ServerMain {
     private final TCPConnection tcpConnection = new TCPConnection();
     private final UDPConnection udpConnection = new UDPConnection();
     private final GameLoop gameLoop = new GameLoop();
-    private final CalculateCRC calculateCRC = b -> new byte[4]; // CalculateCRC.getInstance();
+    private final CalculateCRC calculateCRC = CalculateCRC.getInstance();
 
     /**
      * Used to handle closing down all threads associated with the server. Volatile

@@ -8,6 +8,7 @@ import com.openeqoa.server.network.udp.CalculateCRC;
 import com.openeqoa.server.network.udp.in.packet.message.acknowledgement.GameVersionPacketAcknowledgementMessage;
 import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
 import com.openeqoa.server.network.udp.out.packet.message.GameVersionMessageBuilder;
+import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
 
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -43,13 +44,13 @@ public class GameVersionPacket implements ServerPacket {
         return sessionId;
     }
 
-    public void whenAcknowledged(MessageHandler messageHandler) {
+    public void whenAcknowledged(MessageHandler messageHandler, ProcessPacket processPacket) {
         short serverId = getServerId();
         short clientId = getClientId();
         int sessionId = getSessionId();
         GameVersionPacketAcknowledgementMessage message = new GameVersionPacketAcknowledgementMessage(clientId,
                 serverId, sessionId);
-        messageHandler.visit(message);
+        messageHandler.visit(message, processPacket);
     }
 
     @RequiredArgsConstructor

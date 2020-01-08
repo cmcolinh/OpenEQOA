@@ -5,6 +5,7 @@ import static com.openeqoa.server.util.Log.println;
 import java.net.InetAddress;
 
 import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
+import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
 
 import lombok.AllArgsConstructor;
 
@@ -54,5 +55,5 @@ public abstract class AbstractPacketWrappingClientMessage implements ClientMessa
     }
 
     @Override
-    public abstract void accept(MessageHandler handler);
+    public abstract void accept(MessageHandler handler, ProcessPacket processPacket);
 }

@@ -5,6 +5,9 @@ import static com.openeqoa.server.util.Log.println;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -17,10 +20,15 @@ public class UDPConnection {
 
     private DatagramSocket serverSocket;
 
+    public static final Map<Short, BiFunction<byte[], InetAddress, Runnable>> getEndpoint = Map.ofEntries(
+            Map.entry((short) 0x6110, (b, n) -> ProcessUDPLoginPacket.withBytes(b, n)),
+            Map.entry((short) 0xFEFF, (b, n) -> ProcessUDPEstablishConnectionPacket.withBytes(b, n)));
+
+    public static final BiFunction<byte[], InetAddress, Runnable> EMPTY_RUNNABLE = (b, n) -> () -> {
+    };
+
     /**
-     * Opens a server on a given socket and registers event listeners.
-     *
-     * @param registerListeners Listeners to listen to.
+     * Opens a server on a given socket.
      */
     public void openServer() {
 
@@ -70,8 +78,10 @@ public class UDPConnection {
         byte[] packetBytes = getPacketContentsFromBuffer(packet.getData(), packet.getOffset(), packet.getLength());
         println(getClass(), "Packet received: " + packetBytes.length + " bytes");
         println(getClass(), packetBytesAsHexString(packetBytes));
+        // validatePacketCRC(); TODO: validateCRC before processing packet
 
-        new Thread(ProcessUDPPacket.withBytes(packetBytes, packet.getAddress())).run();
+        short serverId = packetBytes.length < 4 ? 0 : ((short) ((packetBytes[3] << 8) | packetBytes[2]));
+        new Thread(getEndpoint.getOrDefault(serverId, EMPTY_RUNNABLE).apply(packetBytes, packet.getAddress())).run();
     }
 
     private byte[] getPacketContentsFromBuffer(byte[] buffer, int offset, int packetLength) {

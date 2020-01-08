@@ -11,7 +11,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.openeqoa.server.network.udp.ProcessUDPPacket;
+import com.openeqoa.server.network.udp.ProcessUDPLoginPacket;
 import com.openeqoa.server.network.udp.in.packet.message.ClientMessage;
 import com.openeqoa.server.network.udp.in.packet.message.GameVersionMessage;
 import com.openeqoa.server.network.udp.in.packet.message.UserInformationMessage;
@@ -19,7 +19,7 @@ import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
 import com.openeqoa.server.network.udp.in.packet.message.handler.SessionInitiatorRoutineMessageHandler;
 
 class ProcessFirstUDPPacketTest {
-    private ProcessUDPPacket processUDPPacket;
+    private ProcessUDPLoginPacket processUDPPacket;
 
     public ProcessFirstUDPPacketTest() throws Exception {
         byte[] samplePacketBytes = new byte[] { (byte) 0x5a, (byte) 0xe7, // client code
@@ -50,7 +50,7 @@ class ProcessFirstUDPPacketTest {
                 (byte) 0x12, (byte) 0xae, (byte) 0x76, (byte) 0xc4, (byte) 0x98, (byte) 0xfd, (byte) 0xf3, (byte) 0xce,
                 (byte) 0xeb, (byte) 0x44, (byte) 0x4a, (byte) 0x0a, (byte) 0x49, (byte) 0xb5, // end of message
                 (byte) 0xf6, (byte) 0xbe, (byte) 0x24, (byte) 0x34 }; // CRC
-        processUDPPacket = ProcessUDPPacket.withBytes(samplePacketBytes, InetAddress.getByName("localhost"));
+        processUDPPacket = ProcessUDPLoginPacket.withBytes(samplePacketBytes, InetAddress.getByName("localhost"));
     }
 
     @Test
@@ -90,7 +90,7 @@ class ProcessFirstUDPPacketTest {
     }
 
     @SuppressWarnings("unchecked")
-    private List<ClientMessage> findMessages(ProcessUDPPacket processUDPPacket) throws Exception {
+    private List<ClientMessage> findMessages(ProcessUDPLoginPacket processUDPPacket) throws Exception {
         Field field = processUDPPacket.getClass().getDeclaredField("packetBytes");
         field.setAccessible(true);
 
@@ -106,7 +106,7 @@ class ProcessFirstUDPPacketTest {
         return (List<ClientMessage>) m.invoke(processUDPPacket, packetBytes, ipAddress);
     }
 
-    private MessageHandler getHandler(ProcessUDPPacket processUDPPacket) throws Exception {
+    private MessageHandler getHandler(ProcessUDPLoginPacket processUDPPacket) throws Exception {
         Field field = processUDPPacket.getClass().getDeclaredField("packetBytes");
         field.setAccessible(true);
 

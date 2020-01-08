@@ -3,6 +3,7 @@ package com.openeqoa.server.network.udp.in.packet.message;
 import java.net.InetAddress;
 
 import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
+import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
 
 /**
  * Model for client packets with opcode 0x0000
@@ -26,7 +27,7 @@ public final class GameVersionMessage extends AbstractPacketWrappingClientMessag
     }
 
     @Override
-    public void accept(MessageHandler handler) {
-        handler.visit(this);
+    public void accept(MessageHandler handler, ProcessPacket processPacket) {
+        handler.visit(this, processPacket);
     }
 }

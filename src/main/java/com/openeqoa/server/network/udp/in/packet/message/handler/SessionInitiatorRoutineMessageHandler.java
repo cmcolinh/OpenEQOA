@@ -16,6 +16,7 @@ import com.openeqoa.server.network.udp.out.packet.AvailableServersPacketBuilder;
 import com.openeqoa.server.network.udp.out.packet.GameVersionPacket;
 import com.openeqoa.server.network.udp.out.packet.ServerPacket;
 import com.openeqoa.server.network.udp.out.packet.message.GameVersionMessageBuilder;
+import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
 
 import lombok.AllArgsConstructor;
 
@@ -29,7 +30,7 @@ public class SessionInitiatorRoutineMessageHandler implements MessageHandler {
     public final short serverId;
 
     @Override
-    public void handle(ClientPacket packet) {
+    public void handle(ClientPacket packet, ProcessPacket processPacket) {
         int sessionId = packet.getSessionId();
         int messageNum = packet.getLastBundle();
         // Send the acknowledgement if there is one to the client handler
@@ -37,11 +38,11 @@ public class SessionInitiatorRoutineMessageHandler implements MessageHandler {
                 .map(p -> udpClientManager.getClient(p.getClientId()))
                 .ifPresent(clientHandler -> clientHandler.acknowledgePacket(sessionId, messageNum, this));
         // Now handle any messages contained in this packet
-        MessageHandler.super.handle(packet);
+        MessageHandler.super.handle(packet, processPacket);
     }
 
     @Override
-    public void visit(GameVersionMessage message) {
+    public void visit(GameVersionMessage message, ProcessPacket processPacket) {
         if (message.getGameVersion() != FRONTIERS) {
             throw new IllegalArgumentException(
                     "The client is not identifying as a EQOA:Frontiers disc.  Only EQOA: Frontiers is supported");
@@ -49,7 +50,7 @@ public class SessionInitiatorRoutineMessageHandler implements MessageHandler {
     }
 
     @Override
-    public void visit(UserInformationMessage message) {
+    public void visit(UserInformationMessage message, ProcessPacket processPacket) {
         short clientId = message.getClientId();
         UDPClientHandler clientHandler = Optional.ofNullable(message)
                 .map(UserInformationMessage::getServerId)
@@ -60,39 +61,28 @@ public class SessionInitiatorRoutineMessageHandler implements MessageHandler {
             return;
         }
 
-        ServerPacket packet = buildGameVersionPacket(serverId, clientId, message);
-
-        clientHandler.postPacket(packet, message.getSessionId(), 1); // TODO: dynamically get a packet number
+        ServerPacket.Builder builder = buildGameVersionPacket(serverId, clientId, message);
+        processPacket.setBuilder(builder);
+        // clientHandler.postPacket(packet, message.getSessionId(), 1); // TODO:
+        // dynamically get a packet number
     }
 
-    private ServerPacket buildGameVersionPacket(short serverId, short clientId, UserInformationMessage message) {
+    private ServerPacket.Builder buildGameVersionPacket(short serverId, short clientId,
+            UserInformationMessage message) {
         GameVersionMessageBuilder outMessage = new GameVersionMessageBuilder().messageNum(1);
         return new GameVersionPacket.Builder(calculateCRC).clientId(clientId)
-                .serverId(serverId)
                 .sessionId(message.getSessionId())
                 .message(outMessage)
                 .currentBundle(1) // TODO: Get real numbers
                 .lastBundle(1) // TODO: calculate real numbers
-                .lastMessage(2) // TODO: calculate real numbers
-                .build();
+                .lastMessage(2); // TODO: calculate real numbers
     }
 
-    @Override
-    public void visit(GameVersionPacketAcknowledgementMessage message) {
-        UDPClientHandler clientHandler = Optional.ofNullable(message)
-                .map(GameVersionPacketAcknowledgementMessage::getClientId)
-                .map(udpClientManager::getClient)
-                .orElseThrow(() -> new IllegalArgumentException("No active session"));
-        ServerPacket packet = buildAvailableServersPacket(message);
-        clientHandler.postPacket(packet, message.getSessionId(), 2); // TODO: dynamically get a packet number
-    }
-
-    private ServerPacket buildAvailableServersPacket(GameVersionPacketAcknowledgementMessage message) {
+    private ServerPacket.Builder buildAvailableServersPacket(GameVersionPacketAcknowledgementMessage message) {
         return new AvailableServersPacketBuilder(calculateCRC).clientId(message.getClientId())
                 .serverId(message.getServerId())
                 .sessionId(message.getSessionId())
-                .currentBundle(2) // TODO: calculate a real number from somewhere (from udpClientManager?)
-                .build(); // TODO: create a dynamic packet
+                .currentBundle(2); // TODO: calculate a real number from somewhere (from udpClientManager?)
     }
 
     private UDPClientHandler createNewUDPConnection(short clientId, InetAddress ipAddress) {
