@@ -1,18 +1,13 @@
 package com.openeqoa.server.network.udp.in.packet.message.handler;
 
-import java.net.InetAddress;
 import java.util.Optional;
 
-import com.openeqoa.server.ServerMain;
-import com.openeqoa.server.network.client.UDPClientHandler;
 import com.openeqoa.server.network.client.UDPClientManager;
 import com.openeqoa.server.network.udp.CalculateCRC;
 import com.openeqoa.server.network.udp.UDPConnection;
 import com.openeqoa.server.network.udp.in.packet.ClientPacket;
 import com.openeqoa.server.network.udp.in.packet.message.GameVersionMessage;
 import com.openeqoa.server.network.udp.in.packet.message.UserInformationMessage;
-import com.openeqoa.server.network.udp.in.packet.message.acknowledgement.GameVersionPacketAcknowledgementMessage;
-import com.openeqoa.server.network.udp.out.packet.AvailableServersPacketBuilder;
 import com.openeqoa.server.network.udp.out.packet.GameVersionPacket;
 import com.openeqoa.server.network.udp.out.packet.ServerPacket;
 import com.openeqoa.server.network.udp.out.packet.message.GameVersionMessageBuilder;
@@ -52,14 +47,15 @@ public class SessionInitiatorRoutineMessageHandler implements MessageHandler {
     @Override
     public void visit(UserInformationMessage message, ProcessPacket processPacket) {
         short clientId = message.getClientId();
-        UDPClientHandler clientHandler = Optional.ofNullable(message)
-                .map(UserInformationMessage::getServerId)
-                .filter(sid -> sid == UNKNOWN_SERVER_ID)
-                .map(__ -> createNewUDPConnection(message.getClientId(), message.getIpAddress()))
-                .orElseGet(() -> udpClientManager.getClient(message.getClientId()));
-        if (clientHandler == null) {
-            return;
-        }
+        // UDPClientHandler clientHandler = Optional.ofNullable(message)
+        // .map(UserInformationMessage::getServerId)
+        // .filter(sid -> sid == UNKNOWN_SERVER_ID)
+        // .map(__ -> createNewUDPConnection(message.getClientId(),
+        // message.getIpAddress()))
+        // .orElseGet(() -> udpClientManager.getClient(message.getClientId()));
+        // if (clientHandler == null) {
+        // return;
+        // }
 
         ServerPacket.Builder builder = buildGameVersionPacket(serverId, clientId, message);
         processPacket.setBuilder(builder);
@@ -78,20 +74,17 @@ public class SessionInitiatorRoutineMessageHandler implements MessageHandler {
                 .lastMessage(2); // TODO: calculate real numbers
     }
 
-    private ServerPacket.Builder buildAvailableServersPacket(GameVersionPacketAcknowledgementMessage message) {
-        return new AvailableServersPacketBuilder(calculateCRC).clientId(message.getClientId())
-                .serverId(message.getServerId())
-                .sessionId(message.getSessionId())
-                .currentBundle(2); // TODO: calculate a real number from somewhere (from udpClientManager?)
-    }
-
-    private UDPClientHandler createNewUDPConnection(short clientId, InetAddress ipAddress) {
-        if (udpClientManager.isRegistered(clientId) || ServerMain.getInstance().getServerId() == clientId
-                || ServerMain.getInstance().getOtherServers().containsValue(clientId)) {
-            return null; // ignore the request, and wait for the client to try again with another ID
-        }
-        UDPClientHandler clientHandler = new UDPClientHandler.Implementation(ipAddress, 5555, udpConnection);
-        udpClientManager.addClient(clientId, clientHandler);
-        return clientHandler;
-    }
+    // private UDPClientHandler createNewUDPConnection(short clientId, InetAddress
+    // ipAddress) {
+    // if (udpClientManager.isRegistered(clientId) ||
+    // ServerMain.getInstance().getServerId() == clientId
+    // || ServerMain.getInstance().getOtherServers().containsValue(clientId)) {
+    // return null; // ignore the request, and wait for the client to try again with
+    // another ID
+    // }
+    // UDPClientHandler clientHandler = new
+    // UDPClientHandler.Implementation(ipAddress, 5555, udpConnection);
+    // udpClientManager.addClient(clientId, clientHandler);
+    // return clientHandler;
+    // }
 }

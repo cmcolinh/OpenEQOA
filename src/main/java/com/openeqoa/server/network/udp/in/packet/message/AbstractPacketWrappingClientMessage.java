@@ -2,8 +2,6 @@ package com.openeqoa.server.network.udp.in.packet.message;
 
 import static com.openeqoa.server.util.Log.println;
 
-import java.net.InetAddress;
-
 import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
 import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
 
@@ -19,8 +17,6 @@ import lombok.AllArgsConstructor;
  */
 @AllArgsConstructor
 public abstract class AbstractPacketWrappingClientMessage implements ClientMessage {
-    protected final InetAddress ipAddress;
-
     /** The bytes representing the packet that contained this message */
     protected final byte[] wrappedPacketBytes;
 

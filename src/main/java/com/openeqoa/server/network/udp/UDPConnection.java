@@ -22,7 +22,7 @@ public class UDPConnection {
 
     public static final Map<Short, BiFunction<byte[], InetAddress, Runnable>> getEndpoint = Map.ofEntries(
             Map.entry((short) 0x6110, (b, n) -> ProcessUDPLoginPacket.withBytes(b, n)),
-            Map.entry((short) 0xFEFF, (b, n) -> ProcessUDPEstablishConnectionPacket.withBytes(b, n)));
+            Map.entry((short) 0xFEFF, (b, n) -> ProcessUDPServerSelectPacket.withBytes(b, n)));
 
     public static final BiFunction<byte[], InetAddress, Runnable> EMPTY_RUNNABLE = (b, n) -> () -> {
     };

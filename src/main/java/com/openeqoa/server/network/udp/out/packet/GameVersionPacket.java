@@ -5,10 +5,7 @@ import static com.openeqoa.server.util.Log.println;
 import java.util.Arrays;
 
 import com.openeqoa.server.network.udp.CalculateCRC;
-import com.openeqoa.server.network.udp.in.packet.message.acknowledgement.GameVersionPacketAcknowledgementMessage;
-import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
 import com.openeqoa.server.network.udp.out.packet.message.GameVersionMessageBuilder;
-import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
 
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -21,37 +18,13 @@ public class GameVersionPacket implements ServerPacket {
         return bytes.clone();
     }
 
-    private short getServerId() {
-        short serverId = bytes[1];
-        serverId = (short) ((serverId << 8) | bytes[0]);
-
-        return serverId;
-    }
-
-    private short getClientId() {
-        short clientId = bytes[3];
-        clientId = (short) ((clientId << 8) | bytes[2]);
-
-        return clientId;
-    }
-
-    private int getSessionId() {
-        int sessionId = bytes[9];
-        sessionId = (sessionId << 8) | bytes[8];
-        sessionId = (sessionId << 8) | bytes[7];
-        sessionId = (sessionId << 8) | bytes[6];
-
-        return sessionId;
-    }
-
-    public void whenAcknowledged(MessageHandler messageHandler, ProcessPacket processPacket) {
-        short serverId = getServerId();
-        short clientId = getClientId();
-        int sessionId = getSessionId();
-        GameVersionPacketAcknowledgementMessage message = new GameVersionPacketAcknowledgementMessage(clientId,
-                serverId, sessionId);
-        messageHandler.visit(message, processPacket);
-    }
+    // public void whenAcknowledged(MessageHandler messageHandler, ProcessPacket
+    // processPacket) {
+    // short serverId = getServerId();
+    // short clientId = getClientId();
+    // int sessionId = getSessionId();
+    // messageHandler.visit(message, processPacket);
+    // }
 
     @RequiredArgsConstructor
     public static class Builder implements ServerPacket.Builder {

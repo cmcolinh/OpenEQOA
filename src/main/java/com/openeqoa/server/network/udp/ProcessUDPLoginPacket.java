@@ -50,6 +50,7 @@ public class ProcessUDPLoginPacket implements Runnable {
     }
 
     public void run() {
+
         println(getClass(), "Searching for messages...");
         List<ClientMessage> messages = findMessages(packetBytes, ipAddress);
         println(getClass(), "" + messages.size() + " Messages found");
@@ -64,6 +65,14 @@ public class ProcessUDPLoginPacket implements Runnable {
         return packetBytes.length > 5 ? createMessageFromRoutingCode.get((byte) (packetBytes[5] >> 4 & 0x0F)) : null;
     }
 
+    private byte getSessionAction() {
+        return packetBytes.length < 7 ? (byte) 0xFF : packetBytes[6];
+    }
+
+    private byte getBundleType() {
+        return packetBytes[6] == (byte) 0x14 || packetBytes.length < 11 ? (byte) 0xFF : packetBytes[10];
+    }
+
     private List<ClientMessage> findMessages(byte[] packetBytes, InetAddress ipAddress) {
         // TODO lots of lazy hard coding here. I'm sure that not all packets are
         // following these rules.
@@ -72,7 +81,7 @@ public class ProcessUDPLoginPacket implements Runnable {
 
         println(getClass(), "0x" + Integer.toHexString(packetBytes[index]).substring(6, 8));
 
-        return messageStreamFrom(packetBytes, ipAddress, index).filter(message -> message != null)
+        return messageStreamFrom(packetBytes, index).filter(message -> message != null)
                 .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
     }
 
@@ -80,13 +89,12 @@ public class ProcessUDPLoginPacket implements Runnable {
         return 14;
     }
 
-    private Stream<ClientMessage> messageStreamFrom(byte[] packetBytes, InetAddress ipAddress, int startIndex) {
-        Iterable<ClientMessage> messageIterable = () -> new PacketByteMessageIterator(packetBytes, ipAddress,
-                startIndex);
+    private Stream<ClientMessage> messageStreamFrom(byte[] packetBytes, int startIndex) {
+        Iterable<ClientMessage> messageIterable = () -> new PacketByteMessageIterator(packetBytes, startIndex);
         return StreamSupport.stream(messageIterable.spliterator(), false);
     }
 
     private void sendResponseToPacket(ProcessPacket processPacket) {
-    	
+
     }
 }

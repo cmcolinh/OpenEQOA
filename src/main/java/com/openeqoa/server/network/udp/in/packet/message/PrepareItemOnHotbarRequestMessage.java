@@ -1,7 +1,5 @@
 package com.openeqoa.server.network.udp.in.packet.message;
 
-import java.net.InetAddress;
-
 import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
 import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
 
@@ -12,9 +10,8 @@ import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
  *
  */
 public final class PrepareItemOnHotbarRequestMessage extends AbstractPacketWrappingClientMessage {
-    public PrepareItemOnHotbarRequestMessage(InetAddress ipAddress, byte[] wrappedPacketBytes, int startIndex,
-            int length) {
-        super(ipAddress, wrappedPacketBytes, startIndex, length);
+    public PrepareItemOnHotbarRequestMessage(byte[] wrappedPacketBytes, int startIndex, int length) {
+        super(wrappedPacketBytes, startIndex, length);
     }
 
     @Override
