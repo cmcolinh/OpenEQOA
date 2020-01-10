@@ -21,7 +21,6 @@ public class SessionInitiatorRoutineMessageHandler implements MessageHandler {
     public static final short UNKNOWN_SERVER_ID = (short) 0xFFFE;
     public final UDPConnection udpConnection;
     public final UDPClientManager udpClientManager;
-    public final CalculateCRC calculateCRC;
     public final short serverId;
 
     @Override

@@ -28,7 +28,7 @@ public interface CalculateCRC extends Function<byte[], byte[]> {
         /**
          * Calculates the CRC needed to append to a packet.
          * 
-         * @param value The incoming bytes we need to calculate a CRC for.
+         * @param value The incoming bytes we need to calculate a CRC for, not including the last 4 bytes
          * @return The final CRC value. Needs to be appended or sent last in the out
          *         stream write.
          */
@@ -36,8 +36,8 @@ public interface CalculateCRC extends Function<byte[], byte[]> {
             println(CalculateCRC.class, "value length:" + value.length);
             int crcValue = 0xffffffff;
 
-            for (byte b : value) {
-                crcValue = (crcValue >>> 8) ^ crcTable[(crcValue & 0xff) ^ (((int)b) & 0xFF)];
+            for (int index = 0; index + 4 < value.length; index++) {
+                crcValue = (crcValue >>> 8) ^ crcTable[(crcValue & 0xff) ^ (((int)value[index]) & 0xFF)];
             }
 
             crcValue ^= 0x11f19ed3; // Toggle operation

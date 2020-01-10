@@ -2,8 +2,6 @@ package com.openeqoa.server.network.udp.out.packet;
 
 import static com.openeqoa.server.util.Log.println;
 
-import java.util.Arrays;
-
 import com.openeqoa.server.network.udp.CalculateCRC;
 import com.openeqoa.server.network.udp.out.packet.message.GameVersionMessageBuilder;
 
@@ -28,9 +26,15 @@ public class GameVersionPacket implements ServerPacket {
 
     @RequiredArgsConstructor
     public static class Builder implements ServerPacket.Builder {
-        private final CalculateCRC calculateCRC;
+    	private final CalculateCRC calculateCRC;
 
-        protected byte[] packetBytes = new byte[35];
+        protected byte[] packetBytes = new byte[] {
+        		(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x95, (byte) 0x60, (byte) 0x00, (byte) 0x00,
+        		(byte) 0x00, (byte) 0x00, (byte) 0x63, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+        		(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+        		(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+        		(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+        };
 
         /** serverId (2 byte value) */
         public GameVersionPacket.Builder serverId(short serverId) {
@@ -95,11 +99,7 @@ public class GameVersionPacket implements ServerPacket {
 
         @Override
         public ServerPacket build() {
-            packetBytes[4] = (byte) 0x95; // packet length
-            packetBytes[5] = (byte) 0x60; // packet class 0x06 (second nibble is part of packet length)
-            packetBytes[10] = (byte) 0x63; // bundle type
-            byte[] basePacket = Arrays.copyOfRange(packetBytes, 0, 31);
-            byte[] crcBytes = calculateCRC.apply(basePacket);
+            byte[] crcBytes = calculateCRC.apply(packetBytes);
             packetBytes[31] = crcBytes[0];
             packetBytes[32] = crcBytes[1];
             packetBytes[33] = crcBytes[2];

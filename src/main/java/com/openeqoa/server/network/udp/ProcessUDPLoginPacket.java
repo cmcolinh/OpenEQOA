@@ -35,12 +35,13 @@ public class ProcessUDPLoginPacket implements Runnable {
     private final short serverId = ServerMain.getInstance().getLoginServerId();
 
     public static Map<Byte, MessageHandler> createMessageFromRoutingCode = Map.ofEntries(
-            Map.entry((byte) 0x07, new CharacterCreationRoutineMessageHandler()),
             Map.entry((byte) 0x0E,
                     new SessionInitiatorRoutineMessageHandler(ServerMain.getInstance().getUdpConnection(),
-                            ServerMain.getInstance().getUdpClients(), CalculateCRC.getInstance(),
+                            ServerMain.getInstance().getUdpClients(),
                             ServerMain.getInstance().getLoginServerId())));
 
+    private static final CalculateCRC calculateCRC = CalculateCRC.getInstance();
+    
     private final byte[] packetBytes;
 
     private final InetAddress ipAddress;
@@ -50,43 +51,41 @@ public class ProcessUDPLoginPacket implements Runnable {
     }
 
     public void run() {
-
+        if  (! validPacket()) return;
         println(getClass(), "Searching for messages...");
         List<ClientMessage> messages = findMessages(packetBytes, ipAddress);
         println(getClass(), "" + messages.size() + " Messages found");
         MessageHandler handler = getHandler(packetBytes);
-        ProcessPacket processPacket = new ProcessLoginPacket();
+        ProcessPacket processPacket = new ProcessLoginPacket(calculateCRC);
         ClientPacket packet = new ClientPacket.Implementation(ipAddress, packetBytes, messages);
         Optional.ofNullable(handler).ifPresent(h -> h.handle(packet, processPacket));
         sendResponseToPacket(processPacket);
+    }
+
+    /** 
+     * This handler is strict about what packets it will accept.  Since it is expecting a session initiator packet,
+     * it will demand that the packet's sessionAction byte (index 6) be 0x21, indicating establishing a new session.
+     * It will demand that the bundle type (index 11) be 0x20, indicating a message without ACK
+     * @return whether the packet passes the validation rules
+     */
+    private boolean validPacket() {
+    	return packetBytes.length > 16 && packetBytes[6] == (byte) 0x21 && packetBytes[11] == (byte) 0x20;
     }
 
     private MessageHandler getHandler(byte[] packetBytes) {
         return packetBytes.length > 5 ? createMessageFromRoutingCode.get((byte) (packetBytes[5] >> 4 & 0x0F)) : null;
     }
 
-    private byte getSessionAction() {
-        return packetBytes.length < 7 ? (byte) 0xFF : packetBytes[6];
-    }
-
-    private byte getBundleType() {
-        return packetBytes[6] == (byte) 0x14 || packetBytes.length < 11 ? (byte) 0xFF : packetBytes[10];
-    }
-
     private List<ClientMessage> findMessages(byte[] packetBytes, InetAddress ipAddress) {
         // TODO lots of lazy hard coding here. I'm sure that not all packets are
         // following these rules.
 
-        int index = findFirstHeaderBreakIndex();
+        int index = 14; // Valid packets handled by this handler should *always* have the first 0xFB here
 
         println(getClass(), "0x" + Integer.toHexString(packetBytes[index]).substring(6, 8));
 
         return messageStreamFrom(packetBytes, index).filter(message -> message != null)
                 .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
-    }
-
-    private int findFirstHeaderBreakIndex() {
-        return 14;
     }
 
     private Stream<ClientMessage> messageStreamFrom(byte[] packetBytes, int startIndex) {
