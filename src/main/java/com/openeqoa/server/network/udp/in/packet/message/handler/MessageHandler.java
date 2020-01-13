@@ -16,7 +16,7 @@ import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
 public interface MessageHandler {
     /** handle all messages in this packet */
     default void handle(ClientPacket packet, ProcessPacket processPacket) {
-        packet.messages().stream().forEach(m -> this.handle(packet, processPacket));
+        packet.messages().stream().forEach(m -> this.handle(m, processPacket));
     }
 
     /** take action based on the type of ClientMessage encountered */
@@ -26,7 +26,7 @@ public interface MessageHandler {
 
     /** Handle a GameVersionMessage (opcode 0x0000) */
     default void visit(GameVersionMessage message, ProcessPacket processPacket) {
-    } // 0x0000 - Gam (Client)
+    } // 0x0000 - Game Information (Client)
 
     /** Handle a SendReportMessage (opcode 0x0009) */
     default void visit(SendReportMessage message, ProcessPacket processPacket) {

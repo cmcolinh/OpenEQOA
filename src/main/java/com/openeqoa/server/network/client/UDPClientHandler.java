@@ -21,17 +21,19 @@ public interface UDPClientHandler {
      * send a packet to the client, the Client Handler should handle
      * acknowledgement, and retries
      */
-    void postPacket(ServerPacket packet, int packetNum);
+    void postPacket(ServerPacket packet, int packetNum, byte channel);
 
     /**
      * notify the handler that a packet was acknowledged by the client
      */
-    void acknowledgePacket(int messageNum);
+    void acknowledgePacket(int messageNum, byte channel);
 
     public static class Implementation implements UDPClientHandler {
+        public static final byte RELIABLE_CHANNEL = (byte) 0xFF;
+
         // TODO: resend packets automatically if no acknowledgement is received within X
-        // amount of time
-        private final Map<Integer, ServerPacket> unacknowledgedPackets = new HashMap<>();
+        // amount of time on the reliable channel
+        private final Map<Byte, Map<Integer, ServerPacket>> unacknowledgedPackets = new HashMap<>();
 
         @Getter
         @NonNull
@@ -50,18 +52,23 @@ public interface UDPClientHandler {
         }
 
         @Override
-        public void postPacket(ServerPacket packet, int packetNum) {
-            unacknowledgedPackets.put(packetNum, packet);
+        public void postPacket(ServerPacket packet, int packetNum, byte channel) {
+            unacknowledgedPackets.computeIfAbsent(channel, k -> new HashMap<>()).put(packetNum, packet);
             udpConnection.sendUDPPacket(packet, this);
         }
 
         @Override
-        public void acknowledgePacket(int packetNum) {
-            unacknowledgedPackets.entrySet()
+        public void acknowledgePacket(int packetNum, byte channel) {
+            unacknowledgedPackets.get(channel)
+                    .entrySet()
                     .stream()
-                    .filter(mapEntry -> mapEntry.getKey() <= packetNum)
+                    .filter(mapEntry -> removeMapEntry(mapEntry, packetNum, channel))
                     .map(mapEntry -> mapEntry.getKey())
-                    .forEach(key -> unacknowledgedPackets.remove(key));
+                    .forEach(key -> unacknowledgedPackets.get(channel).remove(key));
+        }
+
+        private boolean removeMapEntry(Map.Entry<Integer, ServerPacket> mapEntry, int packetNum, byte channel) {
+            return channel == RELIABLE_CHANNEL ? (mapEntry.getKey() <= packetNum) : (mapEntry.getKey() < packetNum);
         }
     }
 }

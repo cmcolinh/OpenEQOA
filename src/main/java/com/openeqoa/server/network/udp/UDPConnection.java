@@ -23,17 +23,13 @@ public class UDPConnection {
 
     private final int CLIENT_PORT = 7483;
 
-    public static final Map<Short, BiFunction<byte[], InetAddress, Runnable>> getEndpoint = Map
-            .ofEntries(
-                    Map.entry((short) 0x0AE0,
-                            (b, n) -> ProcessUDPEstablishConnectionPacket.withBytes(b, n, calculateCRC(),
-                                    clientManager())),
-                    Map.entry(
-                            (short) 0x6110,
-                            (b, n) -> ProcessUDPEstablishConnectionPacket.withBytes(b, n, calculateCRC(),
-                                    clientManager())),
-                    Map.entry((short) 0xFEFF, (b, n) -> ProcessUDPEstablishConnectionPacket.withBytes(b, n,
-                            calculateCRC(), clientManager())));
+    public static final Map<Short, BiFunction<byte[], InetAddress, Runnable>> getEndpoint = Map.ofEntries(
+            Map.entry((short) 0xE00A, // "EQOA"
+                    (b, n) -> ProcessUDPEstablishConnectionPacket.withBytes(b, n, calculateCRC(), clientManager())),
+            Map.entry((short) 0x1061, // "login"
+                    (b, n) -> ProcessUDPEstablishConnectionPacket.withBytes(b, n, calculateCRC(), clientManager())),
+            Map.entry((short) 0xFFFE, // establish connection
+                    (b, n) -> ProcessUDPEstablishConnectionPacket.withBytes(b, n, calculateCRC(), clientManager())));
 
     private static final CalculateCRC calculateCRC() {
         return ServerMain.getInstance().getCalculateCRC();

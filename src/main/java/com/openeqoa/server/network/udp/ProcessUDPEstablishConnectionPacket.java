@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.openeqoa.server.ServerMain;
-import com.openeqoa.server.network.ServerConstants;
 import com.openeqoa.server.network.client.UDPClientHandler;
 import com.openeqoa.server.network.client.UDPClientManager;
 import com.openeqoa.server.network.udp.in.packet.ClientPacket;
@@ -54,8 +53,6 @@ public class ProcessUDPEstablishConnectionPacket implements Runnable {
 
     private static final UDPConnection udpConnection = ServerMain.getInstance().getUdpConnection();
 
-    private static final int port = ServerConstants.GAME_SERVER_PORT;
-
     public static ProcessUDPEstablishConnectionPacket withBytes(byte[] packetBytes, InetAddress ipAddress,
             CalculateCRC calculateCRC, UDPClientManager clientManager) {
         return new ProcessUDPEstablishConnectionPacket(packetBytes, ipAddress, calculateCRC, clientManager);
@@ -76,13 +73,13 @@ public class ProcessUDPEstablishConnectionPacket implements Runnable {
             registerConnection(processPacket);
             sendResponseToPacket(processPacket);
         } catch (Exception e) {
-            println(getClass(), e.getMessage());
+            println(getClass(), "error type: " + e.getStackTrace()[0]);
         }
     }
 
     private void registerConnection(ProcessPacket processPacket) {
         /** create the client handler for this server and clientId */
-        clientHandler = new UDPClientHandler.Implementation(ipAddress, port, processPacket.clientId(), udpConnection);
+        clientHandler = new UDPClientHandler.Implementation(ipAddress, processPacket.clientId(), udpConnection);
 
         short serverId = processPacket.serverId();
         short clientId = processPacket.clientId();
@@ -129,6 +126,6 @@ public class ProcessUDPEstablishConnectionPacket implements Runnable {
     private void sendResponseToPacket(ProcessPacket processPacket) {
         ServerPacket packet = processPacket.getBuilder().build();
         int messageNum = processPacket.packetNum();
-        clientHandler.postPacket(packet, messageNum);
+        clientHandler.postPacket(packet, messageNum, UDPClientHandler.Implementation.RELIABLE_CHANNEL);
     }
 }

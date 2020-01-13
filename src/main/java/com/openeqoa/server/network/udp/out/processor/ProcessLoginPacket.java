@@ -35,6 +35,7 @@ public class ProcessLoginPacket implements ProcessPacket {
     public ServerPacket.Builder getBuilder() {
         if (builder == null) {
             builder = new GameVersionPacket.Builder(calculateCRC).clientId(clientId)
+                    .serverId(serverId)
                     .sessionId(message.sessionId())
                     .message(outMessage)
                     .currentBundle(1) // TODO: Get real numbers

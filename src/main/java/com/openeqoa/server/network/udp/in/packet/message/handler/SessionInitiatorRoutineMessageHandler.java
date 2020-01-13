@@ -3,7 +3,6 @@ package com.openeqoa.server.network.udp.in.packet.message.handler;
 import com.openeqoa.server.network.client.UDPClientManager;
 import com.openeqoa.server.network.udp.CalculateCRC;
 import com.openeqoa.server.network.udp.UDPConnection;
-import com.openeqoa.server.network.udp.in.packet.ClientPacket;
 import com.openeqoa.server.network.udp.in.packet.message.GameVersionMessage;
 import com.openeqoa.server.network.udp.in.packet.message.UserInformationMessage;
 import com.openeqoa.server.network.udp.out.packet.message.GameVersionMessageBuilder;
@@ -22,11 +21,6 @@ public class SessionInitiatorRoutineMessageHandler implements MessageHandler {
     public final CalculateCRC calculateCRC;
 
     @Override
-    public void handle(ClientPacket packet, ProcessPacket processPacket) {
-        MessageHandler.super.handle(packet, processPacket);
-    }
-
-    @Override
     public void visit(GameVersionMessage message, ProcessPacket processPacket) {
         if (message.getGameVersion() != FRONTIERS) {
             throw new IllegalArgumentException(
@@ -38,13 +32,14 @@ public class SessionInitiatorRoutineMessageHandler implements MessageHandler {
     public void visit(UserInformationMessage message, ProcessPacket processPacket) {
         short clientId = message.clientId();
         ((ProcessLoginPacket) processPacket).userName(message.userName())
-                .serverId(message.serverId())
+                .serverId(serverId)
                 .clientId(clientId)
+                .message(message)
                 .outMessage(buildGameVersionMessage(serverId, clientId, message));
     }
 
     private GameVersionMessageBuilder buildGameVersionMessage(short serverId, short clientId,
             UserInformationMessage message) {
-        return new GameVersionMessageBuilder();
+        return new GameVersionMessageBuilder().messageNum(1);
     }
 }

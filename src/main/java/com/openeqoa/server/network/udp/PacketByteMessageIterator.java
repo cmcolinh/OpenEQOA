@@ -51,7 +51,6 @@ public class PacketByteMessageIterator implements Iterator<ClientMessage> {
     @Override
     public ClientMessage next() {
         int length = getLength();
-        println(getClass(), "opcode: 0x" + String.format("%2s", Integer.toHexString(opcode())).replaceAll(" ", "0"));
         ClientMessage message = createMessageFromOpcode.getOrDefault(opcode(), (p, s, l) -> null)
                 .with(packetBytes, index + 4, length);
         println(getClass(), "" + message);

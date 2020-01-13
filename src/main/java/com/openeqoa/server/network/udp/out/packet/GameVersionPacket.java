@@ -26,15 +26,13 @@ public class GameVersionPacket implements ServerPacket {
 
     @RequiredArgsConstructor
     public static class Builder implements ServerPacket.Builder {
-    	private final CalculateCRC calculateCRC;
+        private final CalculateCRC calculateCRC;
 
-        protected byte[] packetBytes = new byte[] {
-        		(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x95, (byte) 0x60, (byte) 0x00, (byte) 0x00,
-        		(byte) 0x00, (byte) 0x00, (byte) 0x63, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
-        		(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
-        		(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
-        		(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
-        };
+        protected byte[] packetBytes = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x95,
+                (byte) 0x60, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x63, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00 };
 
         /** serverId (2 byte value) */
         public GameVersionPacket.Builder serverId(short serverId) {

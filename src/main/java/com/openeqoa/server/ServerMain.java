@@ -21,7 +21,7 @@ public class ServerMain {
 
     private static ServerMain instance = null;
 
-    private final short loginServerId = (short) 0x1061; // "login"
+    private final short loginServerId = (short) 0x6110; // "login"
     private final short serverId = (short) 0x0AE0; // "EQOA", if we need an architecture with different endpoints, this
                                                    // will need to be loadable from configuration
     private final Map<String, Short> otherServers = new HashMap<>(); // one server setup at present
