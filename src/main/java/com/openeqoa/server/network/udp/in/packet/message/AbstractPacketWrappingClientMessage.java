@@ -27,7 +27,7 @@ public abstract class AbstractPacketWrappingClientMessage implements ClientMessa
     protected final int length;
 
     @Override
-    public short getClientId() {
+    public short clientId() {
         short clientId = wrappedPacketBytes[1];
         clientId = (short) ((clientId << 8) | wrappedPacketBytes[0]);
 
@@ -35,14 +35,14 @@ public abstract class AbstractPacketWrappingClientMessage implements ClientMessa
     }
 
     @Override
-    public short getServerId() {
+    public short serverId() {
         short serverId = wrappedPacketBytes[3];
         serverId = (short) ((serverId << 8) | wrappedPacketBytes[2]);
 
         return serverId;
     }
 
-    public int getSessionId() {
+    public int sessionId() {
         int sessionId = ((wrappedPacketBytes[10] & 0xff) << 24) | ((wrappedPacketBytes[9] & 0xff) << 16)
                 | ((wrappedPacketBytes[8] & 0xff) << 8) | (wrappedPacketBytes[7] & 0xff);
         println(getClass(), Integer.toHexString(sessionId));

@@ -11,55 +11,56 @@ import java.util.Map;
  */
 public interface UDPClientManager {
 
-	/** Registers a client to the client manager */
-	void addClient(short clientId, UDPClientHandler clientHandler);
+    /** Registers a client to the client manager */
+    void addClient(short serverId, short clientId, UDPClientHandler clientHandler);
 
-	/** Deregisters a client from the client manager */
-	void removeClient(short clientId);
+    /** Deregisters a client from the client manager */
+    void removeClient(short serverId, short clientId);
 
-	/** Query whether there is a handler for a given clientId */
-	boolean isRegistered(short clientId);
+    /** Query whether there is a handler for a given clientId */
+    boolean isRegistered(short serverId, short clientId);
 
-	/** Acquire the handler associated with a given id */
-	UDPClientHandler getClient(short clientId);
+    /** Acquire the handler associated with a given id */
+    UDPClientHandler getClient(short serverId, short clientId);
 
-	/** Get the number of active connections */
-	int clientsOnline();
+    /** Get the number of active connections */
+    int clientsOnline();
 
-	public static class SingleServerImplementation implements UDPClientManager {
-		private final Map<Short, UDPClientHandler> udpClientRegistry = new HashMap<>();
+    public static class SingleServerImplementation implements UDPClientManager {
+        private final Map<Integer, UDPClientHandler> udpClientRegistry = new HashMap<>();
 
-		@Override
-		public void addClient(short clientId, UDPClientHandler clientHandler) {
-			synchronized (udpClientRegistry) {
-				if (!udpClientRegistry.containsKey(clientId)) {
-					udpClientRegistry.put(clientId, clientHandler);
-				}
-			}
-		}
+        @Override
+        public void addClient(short serverId, short clientId, UDPClientHandler clientHandler) {
+            int key = serverId << 8 | (clientId & 0x0000FFFF);
+            synchronized (udpClientRegistry) {
+                if (!udpClientRegistry.containsKey(key)) {
+                    udpClientRegistry.put(key, clientHandler);
+                }
+            }
+        }
 
-		@Override
-		public void removeClient(short clientId) {
-			synchronized (udpClientRegistry) {
-				udpClientRegistry.remove(clientId);
-			}
-		}
+        @Override
+        public void removeClient(short serverId, short clientId) {
+            synchronized (udpClientRegistry) {
+                udpClientRegistry.remove(serverId << 8 | (clientId & 0x0000FFFF));
+            }
+        }
 
-		@Override
-		public boolean isRegistered(short clientId) {
-			return udpClientRegistry.containsKey(clientId);
-		}
+        @Override
+        public boolean isRegistered(short serverId, short clientId) {
+            return udpClientRegistry.containsKey(serverId << 8 | (clientId & 0x0000FFFF));
+        }
 
-		@Override
-		public UDPClientHandler getClient(short clientId) {
-			synchronized (udpClientRegistry) {
-				return udpClientRegistry.get(clientId);
-			}
-		}
+        @Override
+        public UDPClientHandler getClient(short serverId, short clientId) {
+            synchronized (udpClientRegistry) {
+                return udpClientRegistry.get(serverId << 8 | (clientId & 0x0000FFFF));
+            }
+        }
 
-		@Override
-		public int clientsOnline() {
-			return udpClientRegistry.size();
-		}
-	}
+        @Override
+        public int clientsOnline() {
+            return udpClientRegistry.size();
+        }
+    }
 }

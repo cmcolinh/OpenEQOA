@@ -16,7 +16,7 @@ import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
 public interface MessageHandler {
     /** handle all messages in this packet */
     default void handle(ClientPacket packet, ProcessPacket processPacket) {
-        packet.getMessages().stream().forEach(m -> this.handle(packet, processPacket));
+        packet.messages().stream().forEach(m -> this.handle(packet, processPacket));
     }
 
     /** take action based on the type of ClientMessage encountered */

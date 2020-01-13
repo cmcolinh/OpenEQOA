@@ -12,19 +12,19 @@ import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
  */
 public interface ClientMessage {
     /** Get the Client end point for the message. It is a 2 byte (short) value */
-    public short getClientId();
+    public short clientId();
 
     /** Get the server end point for the message. It is a 2 byte (short) value */
-    public short getServerId();
+    public short serverId();
 
     /** Get the session id for the message. It is a 4 byte (int) value */
-    public int getSessionId();
+    public int sessionId();
 
     /**
      * Do whatever the message handler does with this kind of ClientMessage
      * 
      * @param MessageHandler handles this message
-     * @param ProcessPacket tracks the processing of a packet
+     * @param ProcessPacket  tracks the processing of a packet
      */
     public void accept(MessageHandler handler, ProcessPacket messageState);
 }

@@ -18,4 +18,8 @@ public class UserInformationMessage extends AbstractPacketWrappingClientMessage 
     public void accept(MessageHandler handler, ProcessPacket processPacket) {
         handler.visit(this, processPacket);
     }
+
+    public String userName() {
+        return "Faxon"; // TODO: clearly this is not the real name....
+    }
 }

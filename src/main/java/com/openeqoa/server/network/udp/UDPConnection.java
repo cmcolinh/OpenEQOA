@@ -14,15 +14,34 @@ import java.util.stream.IntStream;
 import com.openeqoa.server.ServerMain;
 import com.openeqoa.server.network.ServerConstants;
 import com.openeqoa.server.network.client.UDPClientHandler;
+import com.openeqoa.server.network.client.UDPClientManager;
 import com.openeqoa.server.network.udp.out.packet.ServerPacket;
 
 public class UDPConnection {
 
     private DatagramSocket serverSocket;
 
-    public static final Map<Short, BiFunction<byte[], InetAddress, Runnable>> getEndpoint = Map.ofEntries(
-            Map.entry((short) 0x6110, (b, n) -> ProcessUDPLoginPacket.withBytes(b, n)),
-            Map.entry((short) 0xFEFF, (b, n) -> ProcessUDPServerSelectPacket.withBytes(b, n)));
+    private final int CLIENT_PORT = 7483;
+
+    public static final Map<Short, BiFunction<byte[], InetAddress, Runnable>> getEndpoint = Map
+            .ofEntries(
+                    Map.entry((short) 0x0AE0,
+                            (b, n) -> ProcessUDPEstablishConnectionPacket.withBytes(b, n, calculateCRC(),
+                                    clientManager())),
+                    Map.entry(
+                            (short) 0x6110,
+                            (b, n) -> ProcessUDPEstablishConnectionPacket.withBytes(b, n, calculateCRC(),
+                                    clientManager())),
+                    Map.entry((short) 0xFEFF, (b, n) -> ProcessUDPEstablishConnectionPacket.withBytes(b, n,
+                            calculateCRC(), clientManager())));
+
+    private static final CalculateCRC calculateCRC() {
+        return ServerMain.getInstance().getCalculateCRC();
+    }
+
+    private static UDPClientManager clientManager() {
+        return ServerMain.getInstance().getUdpClients();
+    }
 
     public static final BiFunction<byte[], InetAddress, Runnable> EMPTY_RUNNABLE = (b, n) -> () -> {
     };
@@ -98,8 +117,9 @@ public class UDPConnection {
         println(getClass(), packetBytesAsHexString(packet.getPacketBytes()));
 
         DatagramPacket outPacket = new DatagramPacket(packetBytes, packetBytes.length, client.getIpAddress(),
-                client.getPort());
+                CLIENT_PORT);
         try {
+            println(getClass(), "sending packet....");
             serverSocket.send(outPacket);
         } catch (IOException e) {
             System.out.println("that was bad"); // TODO: something useful
