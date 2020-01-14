@@ -5,8 +5,11 @@ public interface ServerMessage {
 	/** Get the bytes */
 	public byte[] getMessageBytes();
 
-	@FunctionalInterface
 	public static interface Builder {
-		public ServerMessage build();
+		/** set the message number of the message */
+		Builder messageNum(int messageNum);
+
+		/** Build the message */
+		ServerMessage build();
 	}
 }

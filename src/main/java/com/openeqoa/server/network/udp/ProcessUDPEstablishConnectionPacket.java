@@ -126,6 +126,6 @@ public class ProcessUDPEstablishConnectionPacket implements Runnable {
     private void sendResponseToPacket(ProcessPacket processPacket) {
         ServerPacket packet = processPacket.getBuilder().build();
         int messageNum = processPacket.packetNum();
-        clientHandler.postPacket(packet, messageNum, UDPClientHandler.Implementation.RELIABLE_CHANNEL);
+        clientHandler.postReliablePacket(packet);
     }
 }
