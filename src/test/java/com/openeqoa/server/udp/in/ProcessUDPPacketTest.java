@@ -1,4 +1,4 @@
-package com.openeqoa.server.udp;
+package com.openeqoa.server.udp.in;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

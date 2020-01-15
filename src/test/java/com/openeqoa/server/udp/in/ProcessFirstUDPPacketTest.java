@@ -1,4 +1,4 @@
-package com.openeqoa.server.udp;
+package com.openeqoa.server.udp.in;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -17,6 +17,7 @@ import com.openeqoa.server.network.udp.in.packet.message.GameVersionMessage;
 import com.openeqoa.server.network.udp.in.packet.message.UserInformationMessage;
 import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
 import com.openeqoa.server.network.udp.in.packet.message.handler.SessionInitiatorRoutineMessageHandler;
+import com.openeqoa.server.udp.MockUDPClientManager;
 
 class ProcessFirstUDPPacketTest {
     private ProcessUDPEstablishConnectionPacket processUDPPacket;
