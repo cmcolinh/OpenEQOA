@@ -6,11 +6,11 @@ import com.openeqoa.server.network.udp.in.packet.message.CharacterDeleteMessage;
 import com.openeqoa.server.network.udp.in.packet.message.CharacterSelectMessage;
 import com.openeqoa.server.network.udp.in.packet.message.CharacterViewMessage;
 import com.openeqoa.server.network.udp.in.packet.message.ClientMessage;
-import com.openeqoa.server.network.udp.in.packet.message.GameVersionMessage;
 import com.openeqoa.server.network.udp.in.packet.message.PrepareItemOnHotbarRequestMessage;
 import com.openeqoa.server.network.udp.in.packet.message.RollRequestMessage;
 import com.openeqoa.server.network.udp.in.packet.message.SendReportMessage;
-import com.openeqoa.server.network.udp.in.packet.message.UserInformationMessage;
+import com.openeqoa.server.network.udp.in.packet.message.reliable.ClientReliableGameVersionMessage;
+import com.openeqoa.server.network.udp.in.packet.message.reliable.ClientReliableUserInformationMessage;
 import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
 
 public interface MessageHandler {
@@ -25,7 +25,7 @@ public interface MessageHandler {
     }
 
     /** Handle a GameVersionMessage (opcode 0x0000) */
-    default void visit(GameVersionMessage message, ProcessPacket processPacket) {
+    default void visit(ClientReliableGameVersionMessage message, ProcessPacket processPacket) {
     } // 0x0000 - Game Information (Client)
 
     /** Handle a SendReportMessage (opcode 0x0009) */
@@ -57,6 +57,6 @@ public interface MessageHandler {
     } // 0x00C8 - Roll Request
 
     /** Handle a UserInformationMessage (opcode 0x0904) */
-    default void visit(UserInformationMessage message, ProcessPacket processPacket) {
+    default void visit(ClientReliableUserInformationMessage message, ProcessPacket processPacket) {
     } // 0x0904 - Username and More
 }

@@ -10,11 +10,11 @@ import com.openeqoa.server.network.udp.in.packet.message.CharacterDeleteMessage;
 import com.openeqoa.server.network.udp.in.packet.message.CharacterSelectMessage;
 import com.openeqoa.server.network.udp.in.packet.message.CharacterViewMessage;
 import com.openeqoa.server.network.udp.in.packet.message.ClientMessage;
-import com.openeqoa.server.network.udp.in.packet.message.GameVersionMessage;
 import com.openeqoa.server.network.udp.in.packet.message.PrepareItemOnHotbarRequestMessage;
 import com.openeqoa.server.network.udp.in.packet.message.RollRequestMessage;
 import com.openeqoa.server.network.udp.in.packet.message.SendReportMessage;
-import com.openeqoa.server.network.udp.in.packet.message.UserInformationMessage;
+import com.openeqoa.server.network.udp.in.packet.message.reliable.ClientReliableGameVersionMessage;
+import com.openeqoa.server.network.udp.in.packet.message.reliable.ClientReliableUserInformationMessage;
 
 import lombok.AllArgsConstructor;
 
@@ -31,13 +31,13 @@ public class PacketByteMessageIterator implements Iterator<ClientMessage> {
     public static final byte MESSAGE_SEPARATOR = (byte) 0xFB;
 
     public static final Map<Short, MakeClientMessage> createMessageFromOpcode = Map.ofEntries(
-            Map.entry((short) 0x0000, GameVersionMessage::new), Map.entry((short) 0x0009, SendReportMessage::new),
+            Map.entry((short) 0x0000, ClientReliableGameVersionMessage::new), Map.entry((short) 0x0009, SendReportMessage::new),
             Map.entry((short) 0x000A, PrepareItemOnHotbarRequestMessage::new),
             Map.entry((short) 0x002A, CharacterSelectMessage::new),
             Map.entry((short) 0x002B, CharacterCreateMessage::new),
             Map.entry((short) 0x002C, CharacterViewMessage::new),
             Map.entry((short) 0x002D, CharacterDeleteMessage::new), Map.entry((short) 0x00C8, RollRequestMessage::new),
-            Map.entry((short) 0x0904, UserInformationMessage::new));
+            Map.entry((short) 0x0904, ClientReliableUserInformationMessage::new));
 
     private final byte[] packetBytes;
 

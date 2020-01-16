@@ -1,5 +1,6 @@
-package com.openeqoa.server.network.udp.in.packet.message;
+package com.openeqoa.server.network.udp.in.packet.message.reliable;
 
+import com.openeqoa.server.network.udp.in.packet.message.AbstractPacketWrappingClientMessage;
 import com.openeqoa.server.network.udp.in.packet.message.handler.MessageHandler;
 import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
 
@@ -9,8 +10,8 @@ import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
  * @author colin
  *
  */
-public final class GameVersionMessage extends AbstractPacketWrappingClientMessage {
-    public GameVersionMessage(byte[] wrappedPacketBytes, int startIndex, int length) {
+public final class ClientReliableGameVersionMessage extends AbstractPacketWrappingClientMessage {
+    public ClientReliableGameVersionMessage(byte[] wrappedPacketBytes, int startIndex, int length) {
         super(wrappedPacketBytes, startIndex, length);
     }
 

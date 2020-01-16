@@ -3,8 +3,8 @@ package com.openeqoa.server.network.udp.in.packet.message.handler;
 import com.openeqoa.server.network.client.UDPClientManager;
 import com.openeqoa.server.network.udp.CalculateCRC;
 import com.openeqoa.server.network.udp.UDPConnection;
-import com.openeqoa.server.network.udp.in.packet.message.GameVersionMessage;
-import com.openeqoa.server.network.udp.in.packet.message.UserInformationMessage;
+import com.openeqoa.server.network.udp.in.packet.message.reliable.ClientReliableGameVersionMessage;
+import com.openeqoa.server.network.udp.in.packet.message.reliable.ClientReliableUserInformationMessage;
 import com.openeqoa.server.network.udp.out.packet.message.GameVersionMessageBuilder;
 import com.openeqoa.server.network.udp.out.processor.ProcessLoginPacket;
 import com.openeqoa.server.network.udp.out.processor.ProcessPacket;
@@ -21,7 +21,7 @@ public class SessionInitiatorRoutineMessageHandler implements MessageHandler {
     public final CalculateCRC calculateCRC;
 
     @Override
-    public void visit(GameVersionMessage message, ProcessPacket processPacket) {
+    public void visit(ClientReliableGameVersionMessage message, ProcessPacket processPacket) {
         if (message.getGameVersion() != FRONTIERS) {
             throw new IllegalArgumentException(
                     "The client is not identifying as a EQOA:Frontiers disc.  Only EQOA: Frontiers is supported");
@@ -29,7 +29,7 @@ public class SessionInitiatorRoutineMessageHandler implements MessageHandler {
     }
 
     @Override
-    public void visit(UserInformationMessage message, ProcessPacket processPacket) {
+    public void visit(ClientReliableUserInformationMessage message, ProcessPacket processPacket) {
         short clientId = message.clientId();
         ((ProcessLoginPacket) processPacket).userName(message.userName())
                 .serverId(serverId)
@@ -39,7 +39,7 @@ public class SessionInitiatorRoutineMessageHandler implements MessageHandler {
     }
 
     private GameVersionMessageBuilder buildGameVersionMessage(short serverId, short clientId,
-            UserInformationMessage message) {
+            ClientReliableUserInformationMessage message) {
         return new GameVersionMessageBuilder().messageNum(1);
     }
 }
